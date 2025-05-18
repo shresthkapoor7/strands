@@ -18,9 +18,8 @@ function App() {
   };
 
   return (
-    <Router>
+    <Router basename="/strands">
       <div className="app">
-
         <div className="mobile-topbar">
           <button className="hamburger" onClick={toggleSidebar}>
             ☰
