@@ -51,18 +51,18 @@
 .sidebar {
   width: 200px;
   background-color: #ffffff;
-  border-right: 1px solid #e5e7eb;
+  border-left: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;
   padding: 1rem;
   transition: transform 0.3s ease;
   position: fixed;
-  left: 0;
+  right: 0;
   top: 0;
   bottom: 0;
-  transform: translateX(-100%);
+  transform: translateX(100%);
   z-index: 1000;
-  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  box-shadow: -2px 0 5px rgba(0,0,0,0.1);
 }
 
 .sidebar.open {
@@ -107,6 +107,9 @@
 .main-content {
   flex: 1;
   padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
 }
 
 /* Mobile Topbar */
@@ -131,16 +134,20 @@
   font-size: 2.5rem;
   font-weight: bold;
   margin-bottom: 1.5rem;
+  text-align: center;
 }
 
 .main-description {
   font-size: 1.125rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
   line-height: 1.6;
+  text-align: justify;
+  text-justify: inter-word;
 }
 
 .main-links {
   margin-top: 2rem;
+  text-align: center;
 }
 
 .github-link {
@@ -148,10 +155,17 @@
   color: #2563eb;
   text-decoration: none;
   font-size: 1.1rem;
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #2563eb;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
 }
 
 .github-link:hover {
-  text-decoration: underline;
+  background-color: #2563eb;
+  color: white;
+  text-decoration: none;
 }
 
 .nav-button.active {
@@ -162,8 +176,8 @@
 
 .drawer-button {
   position: fixed;
-  top: 1.5rem;
-  left: 1.5rem;
+  top: 1.05rem;
+  right: 1.05rem;
   z-index: 999;
   background: none;
   border: none;
@@ -173,10 +187,20 @@
   color: #374151;
   background-color: #ffffff;
   border-radius: 0.4rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  margin-right: 1rem;
 }
 
 .drawer-button:hover {
   background-color: #f3f4f6;
+}
+
+.close-sidebar {
+  top: 1rem;
+  left: 2rem;
+  background: none;
+  border: none;
+  color: #374151;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 0.5rem;
 }

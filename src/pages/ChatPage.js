@@ -342,13 +342,13 @@ function ChatPage() {
           />
           <div className="thread-panel" style={{ width: `${threadWidth}px` }}>
             <div className="thread-header">
-              <h2>Thread 🧵</h2>
               <button
                 className="close-thread"
                 onClick={() => setActiveThread(null)}
               >
                 ✖️
               </button>
+              <h2>Thread 🧵</h2>
             </div>
 
             <div className="thread-replies">

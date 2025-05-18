@@ -1,6 +1,21 @@
 import { NavLink } from "react-router-dom";
+import { useEffect } from "react";
 
 function Sidebar({ isOpen, toggleSidebar }) {
+  useEffect(() => {
+    let timeoutId;
+    if (isOpen) {
+      timeoutId = setTimeout(() => {
+        toggleSidebar();
+      }, 2200);
+    }
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [isOpen, toggleSidebar]);
+
   return (
     <>
       <button className="drawer-button" onClick={toggleSidebar}>

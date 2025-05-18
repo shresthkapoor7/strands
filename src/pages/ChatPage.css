@@ -90,7 +90,6 @@
 /* Chat Header */
 .chat-header {
   margin-bottom: 2rem;
-  padding-left: 4rem;
 }
 
 .chat-title {
@@ -250,10 +249,9 @@
 /* THREAD HEADER */
 .thread-header {
   border-bottom: 1px solid var(--border-color);
-  padding-bottom: var(--spacing-md);
-  margin-bottom: var(--spacing-sm);
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
   display: flex;
-  justify-content: space-between;
   align-items: center;
 }
 
@@ -268,6 +266,7 @@
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
+  padding: 0.25rem;
 }
 
 /* THREAD REPLIES */
