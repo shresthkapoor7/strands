@@ -1,0 +1,56 @@
+.threads-title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 2rem;
+  }
+
+  .threads-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .thread-card {
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid #e5e7eb;
+    border-radius: 1rem;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+  }
+
+  .thread-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+  }
+
+  .thread-image {
+    height: 100px;
+    background: linear-gradient(135deg, #a5b4fc, #60a5fa);
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    opacity: 0.7;
+  }
+
+  .thread-title {
+    font-weight: 600;
+    text-align: center;
+    font-size: 1rem;
+  }
+
+  .add-thread {
+    background-color: #e0f2fe;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .plus-icon {
+    font-size: 2.5rem;
+    color: #0c4a6e;
+    font-weight: bold;
+  }

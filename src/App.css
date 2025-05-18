@@ -36,3 +36,147 @@
     transform: rotate(360deg);
   }
 }
+
+
+/* Main App Layout */
+.app {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f9fafb;
+  color: #111827;
+  position: relative;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 200px;
+  background-color: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  transition: transform 0.3s ease;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  transform: translateX(-100%);
+  z-index: 1000;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+.sidebar.open {
+  transform: translateX(0);
+}
+
+.logo {
+  font-weight: bold;
+  font-size: 1.75rem;
+  margin-bottom: 2rem;
+}
+
+.nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-button {
+  background: none;
+  border: none;
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+  font-size: 0.95rem;
+  cursor: pointer;
+  color: #374151;
+  transition: background 0.2s ease;
+  border-radius: 0.4rem;
+}
+
+.nav-button:hover {
+  background-color: #f3f4f6;
+}
+
+.footer {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
+.main-content {
+  flex: 1;
+  padding: 2rem;
+}
+
+/* Mobile Topbar */
+.mobile-topbar {
+  display: none;
+}
+
+/* Mobile-specific behavior */
+@media screen and (max-width: 768px) {
+  .main-content {
+    flex: 1;
+    padding: 1rem;
+  }
+
+  .app {
+    flex-direction: column;
+    padding-top: 4rem;
+  }
+}
+
+.main-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+}
+
+.main-description {
+  font-size: 1.125rem;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.main-links {
+  margin-top: 2rem;
+}
+
+.github-link {
+  font-weight: bold;
+  color: #2563eb;
+  text-decoration: none;
+  font-size: 1.1rem;
+}
+
+.github-link:hover {
+  text-decoration: underline;
+}
+
+.nav-button.active {
+  background-color: #e0f2fe;
+  color: #0c4a6e;
+  font-weight: bold;
+}
+
+.drawer-button {
+  position: fixed;
+  top: 1.5rem;
+  left: 1.5rem;
+  z-index: 999;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.75rem;
+  color: #374151;
+  background-color: #ffffff;
+  border-radius: 0.4rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-right: 1rem;
+}
+
+.drawer-button:hover {
+  background-color: #f3f4f6;
+}

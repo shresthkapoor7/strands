@@ -1,24 +1,43 @@
-import logo from './logo.svg';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Sidebar from './components/Sidebar';
+import MainContent from './components/MainContent';
 import './App.css';
+import { useState } from 'react';
+import Threads from './pages/Threads';
+import ChatPage from './pages/ChatPage';
+
+function Settings() {
+  return <div className="main-content"><h1>Settings Page</h1></div>;
+}
 
 function App() {
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!isSidebarOpen);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div className="app">
+
+        <div className="mobile-topbar">
+          <button className="hamburger" onClick={toggleSidebar}>
+            ☰
+          </button>
+          <div className="mobile-title">Strands</div>
+        </div>
+
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+
+        <Routes>
+          <Route path="/" element={<MainContent />} />
+          <Route path="/threads" element={<Threads />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/chat/:chatId" element={<ChatPage />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
