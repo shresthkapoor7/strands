@@ -2,7 +2,7 @@
   "name": "strands",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://shresthkapoor7.github.io/strands",
+  "homepage": "https://shresthkapoor7.github.io/strands/home",
   "dependencies": {
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",

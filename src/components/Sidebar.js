@@ -25,7 +25,7 @@ function Sidebar({ isOpen, toggleSidebar }) {
         <div className="logo">Strands</div>
         <div className="nav">
           <NavLink
-            to="/"
+            to="/home"
             className={({ isActive }) =>
               "nav-button" + (isActive ? " active" : "")
             }

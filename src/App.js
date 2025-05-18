@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import MainContent from './components/MainContent';
 import './App.css';
@@ -31,7 +31,8 @@ function App() {
         <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
         <Routes>
-          <Route path="/" element={<MainContent />} />
+          <Route path="/" element={<Navigate to="/home" replace />} />
+          <Route path="/home" element={<MainContent />} />
           <Route path="/threads" element={<Threads />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/chat/:chatId" element={<ChatPage />} />
