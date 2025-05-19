@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { API_CONFIG } from "../config";
+import Message from "../models/Message";
 import "./ChatPage.css";
 
 // Queue size constant
@@ -12,7 +13,7 @@ function ChatPage() {
   const { chatId } = useParams();
   const shortId = chatId.slice(-5);
 
-  const [chatTitle, setChatTitle] = useState("New Chat 📝");
+  const [chatTitle, setChatTitle] = useState(shortId);
   const [userInput, setUserInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [contextQueue, setContextQueue] = useState([]);
@@ -22,6 +23,7 @@ function ChatPage() {
   const [isResizing, setIsResizing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isThreadLoading, setIsThreadLoading] = useState(false);
+  const [messageCounter, setMessageCounter] = useState(0);
 
   // Function to update context queue
   const updateContextQueue = (newMessage) => {
@@ -94,12 +96,8 @@ function ChatPage() {
   const handleSend = async () => {
     if (userInput.trim() === "") return;
 
-    const userMessage = {
-      id: Date.now(),
-      text: userInput,
-      sender: "user",
-      thread: null,
-    };
+    const userMessage = Message.createUserMessage(shortId, messageCounter, userInput, false, -1, chatTitle);
+    setMessageCounter(prev => prev + 1);
 
     setMessages((prev) => [...prev, userMessage]);
     updateContextQueue(userMessage);
@@ -108,16 +106,8 @@ function ChatPage() {
 
     try {
       // Prepare context for API call
-      const conversationContext = contextQueue.map(msg => ({
-        role: msg.sender,
-        parts: [{ text: msg.text }]
-      }));
-
-      // Add current message to context
-      conversationContext.push({
-        role: "user",
-        parts: [{ text: userInput }]
-      });
+      const conversationContext = contextQueue.map(msg => msg.toApiFormat());
+      conversationContext.push(userMessage.toApiFormat());
 
       const response = await fetch(
         `${API_CONFIG.GEMINI.BASE_URL}?key=${API_CONFIG.GEMINI.API_KEY}`,
@@ -131,27 +121,16 @@ function ChatPage() {
       );
 
       const data = await response.json();
-      const modelReply =
-        data.candidates?.[0]?.content?.parts?.[0]?.text ||
-        "No response from AI.";
-
-      const assistantMessage = {
-        id: Date.now() + 1,
-        text: modelReply,
-        sender: "assistant",
-        thread: null,
-      };
+      const assistantMessage = Message.fromApiResponse(shortId, messageCounter, data, false, -1, chatTitle);
+      setMessageCounter(prev => prev + 1);
 
       setMessages((prev) => [...prev, assistantMessage]);
       updateContextQueue(assistantMessage);
     } catch (error) {
       console.error("Error fetching from LLM:", error);
-      const errorMessage = {
-        id: Date.now() + 1,
-        text: "Sorry, I couldn't process your message at the moment.",
-        sender: "assistant",
-        thread: null,
-      };
+      const errorMessage = Message.createErrorMessage(shortId, messageCounter, false, -1, chatTitle);
+      setMessageCounter(prev => prev + 1);
+
       setMessages((prev) => [...prev, errorMessage]);
       updateContextQueue(errorMessage);
     } finally {
@@ -177,12 +156,15 @@ function ChatPage() {
   const handleThreadSend = async () => {
     if (activeThread.input.trim() === "") return;
 
-    const userReply = {
-      id: Date.now(),
-      text: activeThread.input,
-      sender: "user",
-      thread: activeThread.parent.id,
-    };
+    const userReply = Message.createUserMessage(
+      shortId,
+      messageCounter,
+      activeThread.input,
+      true,
+      activeThread.parent.chatId,
+      chatTitle
+    );
+    setMessageCounter(prev => prev + 1);
 
     setActiveThread((prev) => ({
       ...prev,
@@ -194,17 +176,8 @@ function ChatPage() {
     setIsThreadLoading(true);
 
     try {
-      // Prepare thread context for API call
-      const threadContext = threadContextQueue.map(msg => ({
-        role: msg.sender,
-        parts: [{ text: msg.text }]
-      }));
-
-      // Add current message to context
-      threadContext.push({
-        role: "user",
-        parts: [{ text: activeThread.input }]
-      });
+      const threadContext = threadContextQueue.map(msg => msg.toApiFormat());
+      threadContext.push(userReply.toApiFormat());
 
       const response = await fetch(
         `${API_CONFIG.GEMINI.BASE_URL}?key=${API_CONFIG.GEMINI.API_KEY}`,
@@ -218,16 +191,15 @@ function ChatPage() {
       );
 
       const data = await response.json();
-      const modelReply =
-        data.candidates?.[0]?.content?.parts?.[0]?.text ||
-        "No response from AI.";
-
-      const assistantReply = {
-        id: Date.now() + 1,
-        text: modelReply,
-        sender: "assistant",
-        thread: activeThread.parent.id,
-      };
+      const assistantReply = Message.fromApiResponse(
+        shortId,
+        messageCounter,
+        data,
+        true,
+        activeThread.parent.chatId,
+        chatTitle
+      );
+      setMessageCounter(prev => prev + 1);
 
       setActiveThread((prev) => ({
         ...prev,
@@ -237,13 +209,14 @@ function ChatPage() {
       updateThreadContextQueue(assistantReply);
     } catch (error) {
       console.error("Error fetching from LLM in thread:", error);
-
-      const errorReply = {
-        id: Date.now() + 1,
-        text: "Sorry, I couldn't process your message at the moment.",
-        sender: "assistant",
-        thread: activeThread.parent.id,
-      };
+      const errorReply = Message.createErrorMessage(
+        shortId,
+        messageCounter,
+        true,
+        activeThread.parent.chatId,
+        chatTitle
+      );
+      setMessageCounter(prev => prev + 1);
 
       setActiveThread((prev) => ({
         ...prev,
@@ -261,6 +234,20 @@ function ChatPage() {
     console.log("Main context queue:", contextQueue);
     console.log("Thread context queue:", threadContextQueue);
   }, [contextQueue, threadContextQueue]);
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const handleThreadKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleThreadSend();
+    }
+  };
 
   return (
     <div className={`chat-container ${activeThread ? "drawer-open" : ""}`}>
@@ -281,15 +268,15 @@ function ChatPage() {
               <>
                 {messages.map((msg) => (
                   <div
-                    key={msg.id}
+                    key={msg.chatId}
                     className={`chat-bubble ${
-                      msg.sender === "user" ? "user" : "assistant"
+                      msg.sentBy === 0 ? "user" : "assistant"
                     }`}
                   >
                     <ReactMarkdown>{msg.text}</ReactMarkdown>
 
                     {/* Strand Off Button */}
-                    {msg.sender === "assistant" && (
+                    {msg.sentBy === 1 && (
                       <div className="strand-off">
                         <button
                           className="strand-button"
@@ -317,9 +304,10 @@ function ChatPage() {
           <div className="chat-input-area">
             <textarea
               className="chat-textarea"
-              placeholder="Type your message..."
+              placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
+              onKeyDown={handleKeyDown}
               disabled={isLoading}
             />
             <button
@@ -362,8 +350,8 @@ function ChatPage() {
               </div>
               {activeThread.replies.map((reply) => (
                 <div
-                  key={reply.id}
-                  className={`thread-bubble ${reply.sender === 'user' ? 'user' : 'assistant'}`}
+                  key={reply.chatId}
+                  className={`thread-bubble ${reply.sentBy === 0 ? 'user' : 'assistant'}`}
                 >
                   <ReactMarkdown>{reply.text}</ReactMarkdown>
                 </div>
@@ -382,11 +370,12 @@ function ChatPage() {
             <div className="thread-input-area">
               <textarea
                 className="thread-textarea"
-                placeholder="Reply in thread..."
+                placeholder="Reply in thread... (Enter to send, Shift+Enter for new line)"
                 value={activeThread.input}
                 onChange={(e) =>
                   setActiveThread((prev) => ({ ...prev, input: e.target.value }))
                 }
+                onKeyDown={handleThreadKeyDown}
                 disabled={isThreadLoading}
               />
               <button
