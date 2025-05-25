@@ -109,16 +109,11 @@ function ChatPage() {
       const conversationContext = contextQueue.map(msg => msg.toApiFormat());
       conversationContext.push(userMessage.toApiFormat());
 
-      const response = await fetch(
-        `${API_CONFIG.GEMINI.BASE_URL}?key=${API_CONFIG.GEMINI.API_KEY}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: conversationContext,
-          }),
-        }
-      );
+      const response = await fetch('https://api.strandschat.com/api/gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: conversationContext })
+      });
 
       const data = await response.json();
       const assistantMessage = Message.fromApiResponse(shortId, messageCounter, data, false, -1, chatTitle);
@@ -179,16 +174,11 @@ function ChatPage() {
       const threadContext = threadContextQueue.map(msg => msg.toApiFormat());
       threadContext.push(userReply.toApiFormat());
 
-      const response = await fetch(
-        `${API_CONFIG.GEMINI.BASE_URL}?key=${API_CONFIG.GEMINI.API_KEY}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: threadContext,
-          }),
-        }
-      );
+      const response = await fetch('https://api.strandschat.com/api/gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: threadContext })
+      });
 
       const data = await response.json();
       const assistantReply = Message.fromApiResponse(
