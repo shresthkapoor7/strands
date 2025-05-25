@@ -2,16 +2,33 @@ import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import Sidebar from './components/Sidebar';
 import MainContent from './components/MainContent';
 import './App.css';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Threads from './pages/Threads';
 import ChatPage from './pages/ChatPage';
 import Settings from './pages/SettingsPage';
 
 function App() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+
+  // Apply dark mode from localStorage on load
+  useEffect(() => {
+    const storedTheme = localStorage.getItem('theme');
+    const isDark = storedTheme === 'dark';
+    setDarkMode(isDark);
+    document.body.classList.toggle('dark', isDark);
+  }, []);
 
   const toggleSidebar = () => {
     setSidebarOpen(!isSidebarOpen);
+  };
+
+  // Function to pass to Settings
+  const toggleDarkMode = () => {
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+    document.body.classList.toggle('dark', newMode);
+    localStorage.setItem('theme', newMode ? 'dark' : 'light');
   };
 
   return (
@@ -30,7 +47,12 @@ function App() {
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="/home" element={<MainContent />} />
           <Route path="/threads" element={<Threads />} />
-          <Route path="/settings" element={<Settings />} />
+          <Route path="/settings" element={
+            <Settings
+              darkMode={darkMode}
+              toggleDarkMode={toggleDarkMode}
+            />
+          } />
           <Route path="/chat/:chatId" element={<ChatPage />} />
         </Routes>
       </div>

@@ -105,7 +105,6 @@ function ChatPage() {
     setIsLoading(true);
 
     try {
-      // Prepare context for API call
       const conversationContext = contextQueue.map(msg => msg.toApiFormat());
       conversationContext.push(userMessage.toApiFormat());
 
@@ -121,6 +120,49 @@ function ChatPage() {
 
       setMessages((prev) => [...prev, assistantMessage]);
       updateContextQueue(assistantMessage);
+
+      // Use a local updatedQueue to reflect the queue after adding the assistant message
+      const updatedQueue = [...contextQueue, userMessage, assistantMessage];
+      const hasUserMessage = updatedQueue.some(msg => msg.sentBy === 0);
+      const hasLLMResponse = updatedQueue.some(msg => msg.sentBy === 1);
+      const totalMessages = updatedQueue.length;
+
+      if (hasUserMessage && hasLLMResponse && totalMessages === 2) {
+        try {
+          const namePrompt = {
+            role: "user",
+            parts: [{ text: "Based on this conversation, generate a short, descriptive title (max 5 words) for this chat. Only respond with the title, nothing else." }]
+          };
+
+          console.log("Making title generation API call...");
+          const nameResponse = await fetch('https://api.strandschat.com/api/gemini', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [...updatedQueue.map(msg => msg.toApiFormat()), namePrompt]
+            })
+          });
+
+          if (!nameResponse.ok) {
+            throw new Error(`Title generation failed with status: ${nameResponse.status}`);
+          }
+
+          const nameData = await nameResponse.json();
+          console.log("Title generation response:", nameData);
+
+          if (nameData.candidates && nameData.candidates[0]?.content?.parts?.[0]?.text) {
+            const newTitle = nameData.candidates[0].content.parts[0].text.trim();
+            console.log("Setting new chat title:", newTitle);
+            setChatTitle(newTitle);
+          } else {
+            console.warn("Title generation response did not contain expected data structure:", nameData);
+          }
+        } catch (titleError) {
+          console.error("Error generating chat title:", titleError);
+        }
+      } else {
+        console.log("Skipping title generation - need exactly one user message and one LLM response");
+      }
     } catch (error) {
       console.error("Error fetching from LLM:", error);
       const errorMessage = Message.createErrorMessage(shortId, messageCounter, false, -1, chatTitle);
@@ -256,9 +298,9 @@ function ChatPage() {
               </p>
             ) : (
               <>
-                {messages.map((msg) => (
+                {messages.map((msg, idx) => (
                   <div
-                    key={msg.chatId}
+                    key={msg.chatId + '-' + idx}
                     className={`chat-bubble ${
                       msg.sentBy === 0 ? "user" : "assistant"
                     }`}
