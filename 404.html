@@ -4,16 +4,6 @@
     <meta charset="utf-8">
     <title>Strands</title>
     <script type="text/javascript">
-      var l = window.location;
-      if (l.search.includes('~and~')) return; // prevent infinite loops
-      var pathSegmentsToKeep = 0;
-      l.replace(
-        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-        '/' + '?/' +
-        l.pathname.slice(1).split('/').join('/').replace(/&/g, '~and~') +
-        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
-        l.hash
-      );
     </script>
   </head>
   <body>
