@@ -1,4 +1,3 @@
-/* Variables */
 :root {
   --primary-color: #3b82f6;
   --primary-hover: #2563eb;
@@ -13,6 +12,20 @@
   --spacing-md: 1rem;
 }
 
+body.dark {
+  --primary-color: #60a5fa;
+  --primary-hover: #3b82f6;
+  --bg-light: #1f2937;
+  --bg-white: #111827;
+  --bg-dark: #000000;
+  --text-dark: #f9fafb;
+  --text-light: #e5e7eb;
+  --text-gray: #9ca3af;
+  --text-gray-dark: #d1d5db;
+  --border-color: #374151;
+  --border-dark: #4b5563;
+}
+
 .chat-container {
   display: flex;
   height: 100vh;
@@ -22,7 +35,6 @@
   padding: 0.5rem;
 }
 
-/* Main Chat */
 .main-chat {
   flex: 1;
   padding: var(--spacing-md);
@@ -52,7 +64,7 @@
   flex-direction: row;
 }
 
-/* Resize Handle */
+
 .resize-handle {
   width: 6px;
   cursor: ew-resize;
@@ -68,7 +80,7 @@
   background-color: var(--primary-color);
 }
 
-/* Mobile Responsiveness */
+
 @media (max-width: 640px) {
   .drawer-open .main-chat {
     display: none;
@@ -87,7 +99,7 @@
   }
 }
 
-/* Chat Header */
+
 .chat-header {
   margin-bottom: 2rem;
 }
@@ -107,7 +119,7 @@
   color: var(--text-gray);
 }
 
-/* Chat Body */
+
 .chat-body {
   display: flex;
   flex-direction: column;
@@ -120,7 +132,7 @@
   position: relative;
 }
 
-/* Messages Container */
+
 .chat-messages, .thread-replies {
   flex: 1;
   overflow-y: auto;
@@ -142,7 +154,6 @@
   margin-top: 2rem;
 }
 
-/* Message Bubbles - Common Styles */
 .chat-bubble, .thread-bubble {
   padding: 0.15rem var(--spacing-md);
   border-radius: var(--bubble-radius);
@@ -161,7 +172,6 @@
   padding: 0.6rem 0.9rem;
 }
 
-/* User & Assistant Messages */
 .chat-bubble.user, .thread-bubble.user {
   background-color: var(--primary-color);
   color: var(--bg-white);
@@ -174,7 +184,6 @@
   align-self: flex-start;
 }
 
-/* Strand Button */
 .strand-off {
   margin-top: 0.75rem;
   display: flex;
@@ -197,7 +206,6 @@
   text-decoration: underline;
 }
 
-/* Input Areas */
 .chat-input-area, .thread-input-area {
   display: flex;
   gap: var(--spacing-sm);
@@ -211,13 +219,14 @@
   margin-top: auto;
 }
 
-/* Textareas */
 .chat-textarea, .thread-textarea {
   flex: 1;
   resize: none;
   padding: 0.75rem;
   font-size: 1rem;
   border: 1px solid var(--border-color);
+  background-color: var(--bg-light);
+  color: var(--text-dark);
   border-radius: var(--spacing-sm);
 }
 

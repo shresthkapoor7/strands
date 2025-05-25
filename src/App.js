@@ -5,10 +5,7 @@ import './App.css';
 import { useState } from 'react';
 import Threads from './pages/Threads';
 import ChatPage from './pages/ChatPage';
-
-function Settings() {
-  return <div className="main-content"><h1>Settings Page</h1></div>;
-}
+import Settings from './pages/SettingsPage';
 
 function App() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);

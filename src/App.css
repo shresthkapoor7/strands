@@ -1,3 +1,43 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background-color: var(--bg-dark);
+}
+:root {
+  --primary-color: #3b82f6;
+  --primary-hover: #2563eb;
+
+  --bg-white: #ffffff;
+  --bg-light: #f9fafb;
+  --bg-dark: #111827;
+
+  --text-dark: #111827;
+  --text-light: #f9fafb;
+  --text-gray: #6b7280;
+  --text-gray-dark: #374151;
+
+  --border-color: #e5e7eb;
+  --border-dark: #252f41;
+}
+
+body.dark {
+  --primary-color: #60a5fa;
+  --primary-hover: #3b82f6;
+
+  --bg-white: #111827;
+  --bg-light: #1f2937;
+  --bg-dark: #000000;
+
+  --text-dark: #f9fafb;
+  --text-light: #e5e7eb;
+  --text-gray: #9ca3af;
+  --text-gray-dark: #d1d5db;
+
+  --border-color: #374151;
+  --border-dark: #4b5563;
+}
+
 .App {
   text-align: center;
 }
@@ -42,16 +82,16 @@
 .app {
   display: flex;
   min-height: 100vh;
-  background-color: #f9fafb;
-  color: #111827;
+  background-color: var(--bg-light);
+  color: var(--text-dark);
   position: relative;
 }
 
 /* Sidebar */
 .sidebar {
   width: 200px;
-  background-color: #ffffff;
-  border-left: 1px solid #e5e7eb;
+  background-color: var(--bg-white);
+  border-left: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   padding: 1rem;
@@ -88,18 +128,18 @@
   text-align: left;
   font-size: 0.95rem;
   cursor: pointer;
-  color: #374151;
+  color: var(--text-gray-dark);
   transition: background 0.2s ease;
   border-radius: 0.4rem;
 }
 
 .nav-button:hover {
-  background-color: #f3f4f6;
+  background-color: var(--bg-light);
 }
 
 .footer {
   font-size: 0.8rem;
-  color: #9ca3af;
+  color: var(--text-gray);
   margin-top: auto;
   padding-top: 1rem;
 }
@@ -184,13 +224,13 @@
   font-size: 1.5rem;
   cursor: pointer;
   padding: 0.75rem;
-  color: #374151;
-  background-color: #ffffff;
+  color: var(--text-gray-dark);
+  background-color: var(--bg-white);
   border-radius: 0.4rem;
 }
 
 .drawer-button:hover {
-  background-color: #f3f4f6;
+  background-color: var(--bg-light);
 }
 
 .close-sidebar {
@@ -198,7 +238,7 @@
   left: 2rem;
   background: none;
   border: none;
-  color: #374151;
+  color: var(--text-gray-dark);
   font-size: 1.5rem;
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);

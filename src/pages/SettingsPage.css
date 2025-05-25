@@ -1,0 +1,18 @@
+.fancy-button {
+    font-weight: bold;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+    font-size: 1.1rem;
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease, transform 0.2s ease;
+    background-color: transparent;
+    cursor: pointer;
+  }
+
+  .fancy-button:hover {
+    background-color: var(--primary-color);
+    color: white;
+    transform: scale(1.05);
+  }
