@@ -166,12 +166,6 @@ body.dark {
   max-width: 70%;
 }
 
-.thread-bubble {
-  max-width: 85%;
-  font-size: 0.95rem;
-  padding: 0.6rem 0.9rem;
-}
-
 .chat-bubble.user, .thread-bubble.user {
   background-color: var(--primary-color);
   color: var(--bg-white);
@@ -186,6 +180,7 @@ body.dark {
 
 .strand-off {
   margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
   display: flex;
   justify-content: flex-start;
 }
@@ -206,56 +201,59 @@ body.dark {
   text-decoration: underline;
 }
 
-.chat-input-area, .thread-input-area {
+.chat-input-area {
+  position: relative;
   display: flex;
-  gap: var(--spacing-sm);
-  margin-top: var(--spacing-md);
   align-items: center;
+  margin-top: var(--spacing-md);
 }
 
-.thread-input-area {
-  padding: 0.75rem 0;
-  border-top: 1px solid var(--border-color);
-  margin-top: auto;
-}
-
-.chat-textarea, .thread-textarea {
-  flex: 1;
+.chat-textarea {
+  width: 100%;
   resize: none;
-  padding: 0.75rem;
+  padding: 0.75rem 2.5rem 0.75rem 0.75rem;
   font-size: 1rem;
   border: 1px solid var(--border-color);
   background-color: var(--bg-light);
   color: var(--text-dark);
   border-radius: var(--spacing-sm);
+  overflow-y: auto;
+  line-height: 1.5;
+  min-height: 1rem;
+  max-height: 10rem;
+}
+.chat-textarea:focus {
+  outline: none;
+  border-color: #5a5a5a;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.05);
 }
 
-.chat-textarea {
-  min-height: 50px;
-}
-
-.thread-textarea {
-  min-height: 40px;
-  padding: 0.6rem;
-}
-
-/* Send Button */
-.send-button {
+.send-icon-button {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
   background-color: var(--primary-color);
-  color: var(--bg-white);
-  padding: 0.75rem 1.25rem;
-  font-size: 1rem;
   border: none;
-  border-radius: var(--spacing-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
   cursor: pointer;
-  transition: background 0.3s ease;
 }
 
-.send-button:hover {
-  background-color: var(--primary-hover);
+.send-icon-button:hover {
+  transform: scale(1.05);
 }
 
-/* THREAD HEADER */
+.arrow-icon {
+  color: var(--bg-white);
+  font-weight: bold;
+}
+
 .thread-header {
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 0.5rem;
@@ -269,16 +267,15 @@ body.dark {
   font-weight: bold;
 }
 
-/* Close Button */
 .close-thread {
   background: none;
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
   padding: 0.25rem;
+  margin-right: 0.5rem;
 }
 
-/* THREAD REPLIES */
 .thread-replies {
   flex: 1;
   overflow-y: auto;
@@ -288,10 +285,9 @@ body.dark {
   padding: 0 0.5rem;
 }
 
-/* Individual reply bubble */
 .thread-bubble {
-  padding: 0.6rem 0.9rem;
   border-radius: 1rem;
+  max-width: 85%;
   font-size: 0.95rem;
   max-width: 85%;
   word-break: break-word;

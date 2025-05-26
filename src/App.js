@@ -3,9 +3,9 @@ import Sidebar from './components/Sidebar';
 import MainContent from './components/MainContent';
 import './App.css';
 import { useEffect, useState } from 'react';
-import Threads from './pages/Threads';
-import ChatPage from './pages/ChatPage';
-import Settings from './pages/SettingsPage';
+import Threads from './pages/ThreadsPage/ThreadsPage';
+import ChatPage from './pages/ChatPage/ChatPage';
+import Settings from './pages/SettingsPage/SettingsPage';
 
 function App() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);

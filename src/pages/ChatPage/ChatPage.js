@@ -1,11 +1,12 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
-import { API_CONFIG } from "../config";
-import Message from "../models/Message";
+import Message from "../../models/Message";
+import { useCallback } from 'react';
 import "./ChatPage.css";
+import { sendMessageToGemini } from "../../api/gemini";
+import { useRef } from 'react';
 
-// Queue size constant
 const MAX_CONTEXT_SIZE_MAIN_CHAT = 10;
 const MAX_CONTEXT_SIZE_THREAD_CHAT = 5;
 
@@ -23,9 +24,34 @@ function ChatPage() {
   const [isResizing, setIsResizing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isThreadLoading, setIsThreadLoading] = useState(false);
-  const [messageCounter, setMessageCounter] = useState(0);
 
-  // Function to update context queue
+  const textareaRef = useRef(null);
+  const threadTextareaRef = useRef(null);
+
+  const resizeMainTextarea = () => {
+    const el = textareaRef.current;
+    if (el) {
+      el.style.height = 'auto';
+      el.style.height = `${el.scrollHeight}px`;
+    }
+  };
+
+  const resizeThreadTextarea = () => {
+    const el = threadTextareaRef.current;
+    if (el) {
+      el.style.height = 'auto';
+      el.style.height = `${el.scrollHeight}px`;
+    }
+  };
+
+  useEffect(() => {
+    resizeMainTextarea();
+  }, [userInput]);
+
+  useEffect(() => {
+    resizeThreadTextarea();
+  }, [activeThread?.input]);
+
   const updateContextQueue = (newMessage) => {
     setContextQueue(prevQueue => {
       const updatedQueue = [...prevQueue, newMessage];
@@ -36,7 +62,6 @@ function ChatPage() {
     });
   };
 
-  // Function to update thread context queue
   const updateThreadContextQueue = (newMessage) => {
     setThreadContextQueue(prevQueue => {
       const updatedQueue = [...prevQueue, newMessage];
@@ -52,20 +77,14 @@ function ChatPage() {
     e.preventDefault();
   };
 
-  const handleResizeMove = (e) => {
+  const handleResizeMove = useCallback((e) => {
     if (!isResizing) return;
-
-    // Calculate position relative to the window width
     const newWidth = window.innerWidth - e.clientX;
-
-    // Apply constraints (min and max width)
     if (newWidth >= 300 && newWidth <= 800) {
       setThreadWidth(newWidth);
-
-      // Update the CSS variable for thread width
       document.documentElement.style.setProperty('--thread-width', `${newWidth}px`);
     }
-  };
+  }, [isResizing]);
 
   const handleResizeEnd = () => {
     setIsResizing(false);
@@ -80,9 +99,8 @@ function ChatPage() {
       window.removeEventListener('mousemove', handleResizeMove);
       window.removeEventListener('mouseup', handleResizeEnd);
     };
-  }, [isResizing]);
+  }, [isResizing, handleResizeMove]);
 
-  // Update thread width CSS variable when threadWidth state changes
   useEffect(() => {
     document.documentElement.style.setProperty('--thread-width', `${threadWidth}px`);
   }, [threadWidth]);
@@ -96,8 +114,7 @@ function ChatPage() {
   const handleSend = async () => {
     if (userInput.trim() === "") return;
 
-    const userMessage = Message.createUserMessage(shortId, messageCounter, userInput, false, -1, chatTitle);
-    setMessageCounter(prev => prev + 1);
+    const userMessage = Message.createUserMessage(chatId, userInput, false, null, chatTitle);
 
     setMessages((prev) => [...prev, userMessage]);
     updateContextQueue(userMessage);
@@ -108,20 +125,12 @@ function ChatPage() {
       const conversationContext = contextQueue.map(msg => msg.toApiFormat());
       conversationContext.push(userMessage.toApiFormat());
 
-      const response = await fetch('https://api.strandschat.com/api/gemini', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: conversationContext })
-      });
-
-      const data = await response.json();
-      const assistantMessage = Message.fromApiResponse(shortId, messageCounter, data, false, -1, chatTitle);
-      setMessageCounter(prev => prev + 1);
+      const data = await sendMessageToGemini(conversationContext);
+      const assistantMessage = Message.fromApiResponse(chatId, data, false, null, chatTitle);
 
       setMessages((prev) => [...prev, assistantMessage]);
       updateContextQueue(assistantMessage);
 
-      // Use a local updatedQueue to reflect the queue after adding the assistant message
       const updatedQueue = [...contextQueue, userMessage, assistantMessage];
       const hasUserMessage = updatedQueue.some(msg => msg.sentBy === 0);
       const hasLLMResponse = updatedQueue.some(msg => msg.sentBy === 1);
@@ -134,20 +143,7 @@ function ChatPage() {
             parts: [{ text: "Based on this conversation, generate a short, descriptive title (max 5 words) for this chat. Only respond with the title, nothing else." }]
           };
 
-          console.log("Making title generation API call...");
-          const nameResponse = await fetch('https://api.strandschat.com/api/gemini', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [...updatedQueue.map(msg => msg.toApiFormat()), namePrompt]
-            })
-          });
-
-          if (!nameResponse.ok) {
-            throw new Error(`Title generation failed with status: ${nameResponse.status}`);
-          }
-
-          const nameData = await nameResponse.json();
+          const nameData = await sendMessageToGemini([...updatedQueue.map(msg => msg.toApiFormat()), namePrompt]);
           console.log("Title generation response:", nameData);
 
           if (nameData.candidates && nameData.candidates[0]?.content?.parts?.[0]?.text) {
@@ -165,8 +161,7 @@ function ChatPage() {
       }
     } catch (error) {
       console.error("Error fetching from LLM:", error);
-      const errorMessage = Message.createErrorMessage(shortId, messageCounter, false, -1, chatTitle);
-      setMessageCounter(prev => prev + 1);
+      const errorMessage = Message.createErrorMessage(chatId, false, null, chatTitle);
 
       setMessages((prev) => [...prev, errorMessage]);
       updateContextQueue(errorMessage);
@@ -175,33 +170,16 @@ function ChatPage() {
     }
   };
 
-  // Debug function to monitor context queue
-  useEffect(() => {
-    console.log("Current context queue:", contextQueue);
-  }, [contextQueue]);
-
-  const startThread = (parentMessage) => {
-    setActiveThread({
-      parent: parentMessage,
-      replies: [],
-      input: "",
-    });
-    // Initialize thread context with parent message
-    setThreadContextQueue([parentMessage]);
-  };
-
   const handleThreadSend = async () => {
     if (activeThread.input.trim() === "") return;
 
     const userReply = Message.createUserMessage(
-      shortId,
-      messageCounter,
+      chatId,
       activeThread.input,
       true,
-      activeThread.parent.chatId,
+      activeThread.parent.id,
       chatTitle
-    );
-    setMessageCounter(prev => prev + 1);
+    )
 
     setActiveThread((prev) => ({
       ...prev,
@@ -216,22 +194,8 @@ function ChatPage() {
       const threadContext = threadContextQueue.map(msg => msg.toApiFormat());
       threadContext.push(userReply.toApiFormat());
 
-      const response = await fetch('https://api.strandschat.com/api/gemini', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: threadContext })
-      });
-
-      const data = await response.json();
-      const assistantReply = Message.fromApiResponse(
-        shortId,
-        messageCounter,
-        data,
-        true,
-        activeThread.parent.chatId,
-        chatTitle
-      );
-      setMessageCounter(prev => prev + 1);
+      const data = await sendMessageToGemini(threadContext);
+      const assistantReply = Message.fromApiResponse(chatId, data, true, activeThread.parent.id, chatTitle);
 
       setActiveThread((prev) => ({
         ...prev,
@@ -242,13 +206,11 @@ function ChatPage() {
     } catch (error) {
       console.error("Error fetching from LLM in thread:", error);
       const errorReply = Message.createErrorMessage(
-        shortId,
-        messageCounter,
+        chatId,
         true,
-        activeThread.parent.chatId,
+        activeThread.parent.id,
         chatTitle
       );
-      setMessageCounter(prev => prev + 1);
 
       setActiveThread((prev) => ({
         ...prev,
@@ -261,7 +223,15 @@ function ChatPage() {
     }
   };
 
-  // Debug function to monitor both context queues
+  const startThread = (parentMessage) => {
+    setActiveThread({
+      parent: parentMessage,
+      replies: [],
+      input: "",
+    });
+    setThreadContextQueue([parentMessage]);
+  };
+
   useEffect(() => {
     console.log("Main context queue:", contextQueue);
     console.log("Thread context queue:", threadContextQueue);
@@ -300,10 +270,9 @@ function ChatPage() {
               <>
                 {messages.map((msg, idx) => (
                   <div
-                    key={msg.chatId + '-' + idx}
-                    className={`chat-bubble ${
-                      msg.sentBy === 0 ? "user" : "assistant"
-                    }`}
+                    key={msg.id}
+                    className={`chat-bubble ${msg.sentBy === 0 ? "user" : "assistant"
+                      }`}
                   >
                     <ReactMarkdown>{msg.text}</ReactMarkdown>
 
@@ -335,20 +304,26 @@ function ChatPage() {
 
           <div className="chat-input-area">
             <textarea
+              ref={textareaRef}
               className="chat-textarea"
-              placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
+              placeholder="Type your message..."
               value={userInput}
-              onChange={(e) => setUserInput(e.target.value)}
+              onChange={(e) => {
+                setUserInput(e.target.value);
+                resizeMainTextarea();
+              }}
               onKeyDown={handleKeyDown}
               disabled={isLoading}
             />
-            <button
-              className="send-button"
-              onClick={handleSend}
-              disabled={isLoading}
-            >
-              Send
-            </button>
+            {userInput.trim() !== "" && (
+              <button
+                className="send-icon-button"
+                onClick={handleSend}
+                disabled={isLoading}
+              >
+                <span className="arrow-icon">↑</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -368,7 +343,7 @@ function ChatPage() {
               >
                 ✖️
               </button>
-              <h2>Thread 🧵</h2>
+              <h2>Strand 🧵</h2>
             </div>
 
             <div className="thread-replies">
@@ -382,7 +357,7 @@ function ChatPage() {
               </div>
               {activeThread.replies.map((reply) => (
                 <div
-                  key={reply.chatId}
+                  key={reply.id}
                   className={`thread-bubble ${reply.sentBy === 0 ? 'user' : 'assistant'}`}
                 >
                   <ReactMarkdown>{reply.text}</ReactMarkdown>
@@ -399,24 +374,28 @@ function ChatPage() {
               )}
             </div>
 
-            <div className="thread-input-area">
+            <div className="chat-input-area">
               <textarea
-                className="thread-textarea"
-                placeholder="Reply in thread... (Enter to send, Shift+Enter for new line)"
+                ref={threadTextareaRef}
+                className="chat-textarea"
+                placeholder="Reply in thread..."
                 value={activeThread.input}
-                onChange={(e) =>
-                  setActiveThread((prev) => ({ ...prev, input: e.target.value }))
-                }
+                onChange={(e) => {
+                  setActiveThread((prev) => ({ ...prev, input: e.target.value }));
+                  resizeThreadTextarea();
+                }}
                 onKeyDown={handleThreadKeyDown}
                 disabled={isThreadLoading}
               />
-              <button
-                className="send-button"
-                onClick={handleThreadSend}
-                disabled={isThreadLoading}
-              >
-                Send
-              </button>
+              {activeThread.input.trim() !== "" && (
+                <button
+                  className="send-icon-button"
+                  onClick={handleThreadSend}
+                  disabled={isThreadLoading}
+                >
+                  <span className="arrow-icon">↑</span>
+                </button>
+              )}
             </div>
           </div>
         </>

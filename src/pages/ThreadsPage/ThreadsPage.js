@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import './Threads.css';
+import './ThreadsPage.css';
 
 function Threads() {
   const navigate = useNavigate();

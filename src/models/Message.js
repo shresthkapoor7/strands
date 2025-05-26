@@ -1,63 +1,64 @@
+import { v4 as uuidv4 } from 'uuid';
+
 class Message {
-  constructor(shortId, chatId, sentBy, text, createdAt = Date.now(), strand = false, parentChatId = -1, chatTitle = null) {
-    this.shortId = shortId;        // Which chat we are in
-    this.chatId = chatId;          // ID for the message (starts from 0)
-    this.sentBy = sentBy;          // 0 for user, 1 for gemini
-    this.text = text;              // The message content
-    this.createdAt = createdAt;    // Timestamp
-    this.strand = strand;          // True if in thread, false if normal message
-    this.parentChatId = parentChatId; // Parent's chatId if in thread, -1 otherwise
-    this.chatTitle = chatTitle || shortId; // Chat title, defaults to shortId
+  constructor({
+    id = uuidv4(),
+    chatId,
+    sentBy,
+    text,
+    createdAt = new Date().toISOString(),
+    strand = false,
+    parentChatId = null,
+    chatTitle = null,
+  }) {
+    this.id = id;
+    this.chatId = chatId;
+    this.sentBy = sentBy;
+    this.text = text;
+    this.createdAt = createdAt;
+    this.strand = strand;
+    this.parentChatId = parentChatId;
+    this.chatTitle = chatTitle || chatId;
   }
 
-  // Convert to API format
   toApiFormat() {
     return {
       role: this.sentBy === 0 ? "user" : "assistant",
-      parts: [{ text: this.text }]
+      parts: [{ text: this.text }],
     };
   }
 
-  // Create from API response
-  static fromApiResponse(shortId, chatId, response, strand = false, parentChatId = -1, chatTitle = null) {
-    return new Message(
-      shortId,
+  static fromApiResponse(chatId, response, strand = false, parentChatId = null, chatTitle = null) {
+    return new Message({
       chatId,
-      1, // Gemini
-      response.candidates?.[0]?.content?.parts?.[0]?.text || "No response from AI.",
-      Date.now(),
+      sentBy: 1,
+      text: response.candidates?.[0]?.content?.parts?.[0]?.text || "No response from AI.",
       strand,
       parentChatId,
-      chatTitle
-    );
+      chatTitle,
+    });
   }
 
-  // Create user message
-  static createUserMessage(shortId, chatId, text, strand = false, parentChatId = -1, chatTitle = null) {
-    return new Message(
-      shortId,
+  static createUserMessage(chatId, text, strand = false, parentChatId = null, chatTitle = null) {
+    return new Message({
       chatId,
-      0, // User
+      sentBy: 0,
       text,
-      Date.now(),
       strand,
       parentChatId,
-      chatTitle
-    );
+      chatTitle,
+    });
   }
 
-  // Create error message
-  static createErrorMessage(shortId, chatId, strand = false, parentChatId = -1, chatTitle = null) {
-    return new Message(
-      shortId,
+  static createErrorMessage(chatId, strand = false, parentChatId = null, chatTitle = null) {
+    return new Message({
       chatId,
-      1, // Gemini
-      "Sorry, I couldn't process your message at the moment.",
-      Date.now(),
+      sentBy: 1,
+      text: "Sorry, I couldn't process your message at the moment.",
       strand,
       parentChatId,
-      chatTitle
-    );
+      chatTitle,
+    });
   }
 }
 
