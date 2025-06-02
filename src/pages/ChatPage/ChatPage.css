@@ -46,7 +46,7 @@ body.dark {
 }
 
 .thread-panel {
-  height: 87.5vh;
+  height: 89.5vh;
   background-color: var(--bg-white);
   border-left: 1px solid var(--border-color);
   display: flex;
@@ -101,29 +101,66 @@ body.dark {
 
 
 .chat-header {
-  margin-bottom: 2rem;
+  padding: 1rem;
+  width: 100%;
+}
+
+.chat-title-row {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
 }
 
 .chat-title {
-  font-size: 2rem;
-  font-weight: bold;
-  margin-bottom: var(--spacing-sm);
+  font-size: 1.9rem;
+  font-weight: 700;
+  margin: 0;
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: 0.5rem;
 }
 
 .chat-id {
-  font-size: 1.2rem;
-  font-weight: normal;
-  color: var(--text-gray);
+  font-size: 1rem;
+  color: #aaa;
 }
 
+.save-chat-button {
+  background-color: transparent;
+  color: #3b82f6;
+  border: 1px solid #3b82f6;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.save-chat-button:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+@media (max-width: 600px) {
+  .chat-title {
+    font-size: 1.5rem;
+  }
+
+  .chat-title-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .save-chat-button {
+    margin-top: 0.5rem;
+    align-self: center;
+  }
+}
 
 .chat-body {
   display: flex;
   flex-direction: column;
-  height: 75vh;
+  height: 80vh;
   background-color: var(--bg-white);
   border: 1px solid var(--border-color);
   border-radius: var(--bubble-radius);
@@ -136,10 +173,12 @@ body.dark {
 .chat-messages, .thread-replies {
   flex: 1;
   overflow-y: auto;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
   padding-bottom: var(--spacing-md);
+  overscroll-behavior: contain;
 }
 
 .thread-replies {
@@ -204,7 +243,6 @@ body.dark {
 .chat-input-area {
   position: relative;
   display: flex;
-  align-items: center;
   margin-top: var(--spacing-md);
 }
 
@@ -228,13 +266,13 @@ body.dark {
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.05);
 }
 
-.send-icon-button {
+.send-icon-button, .file-icon-button {
   position: absolute;
   right: 0.75rem;
   bottom: 0.75rem;
   width: 2.2rem;
   height: 2.2rem;
-  border-radius: 50%;
+  border-radius: 10%;
   background-color: var(--primary-color);
   border: none;
   display: flex;
@@ -245,7 +283,11 @@ body.dark {
   cursor: pointer;
 }
 
-.send-icon-button:hover {
+.send-icon-button {
+  align-self: flex-start;
+}
+
+.file-icon-button:hover, .send-icon-button:hover {
   transform: scale(1.05);
 }
 

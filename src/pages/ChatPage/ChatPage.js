@@ -24,9 +24,46 @@ function ChatPage() {
   const [isResizing, setIsResizing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isThreadLoading, setIsThreadLoading] = useState(false);
+  const [messageStore, setMessageStore] = useState([]);
 
   const textareaRef = useRef(null);
   const threadTextareaRef = useRef(null);
+
+  const fetchChatMessages = async (chatId) => {
+    try {
+      const res = await fetch(`https://api.strandschat.com/api/get-chat/${chatId}`);
+      const data = await res.json();
+      if (res.ok) {
+        console.log("Fetched messages:", data.messages);
+        return data.messages;
+      } else {
+        console.error("Failed to fetch messages:", data.error);
+        return [];
+      }
+    } catch (error) {
+      console.error("Error fetching chat:", error);
+      return [];
+    }
+  };
+
+  useEffect(() => {
+    const loadMessages = async () => {
+      const fetched = await fetchChatMessages(chatId);
+      const parsedMessages = fetched.map(msg => new Message(msg));
+      const mainMessages = parsedMessages.filter(msg => !msg.strand);
+      setMessages(mainMessages);
+      setMessageStore(parsedMessages);
+
+      if (parsedMessages.length > 0) {
+      setChatTitle(parsedMessages[0].chatTitle);
+      }
+
+      const lastTenMain = mainMessages.slice(-10);
+      setContextQueue(lastTenMain);
+    };
+
+    loadMessages();
+  }, [chatId]);
 
   const resizeMainTextarea = () => {
     const el = textareaRef.current;
@@ -117,6 +154,7 @@ function ChatPage() {
     const userMessage = Message.createUserMessage(chatId, userInput, false, null, chatTitle);
 
     setMessages((prev) => [...prev, userMessage]);
+    setMessageStore((prev) => [...prev, userMessage]);
     updateContextQueue(userMessage);
     setUserInput("");
     setIsLoading(true);
@@ -129,6 +167,7 @@ function ChatPage() {
       const assistantMessage = Message.fromApiResponse(chatId, data, false, null, chatTitle);
 
       setMessages((prev) => [...prev, assistantMessage]);
+      setMessageStore((prev) => [...prev, assistantMessage]);
       updateContextQueue(assistantMessage);
 
       const updatedQueue = [...contextQueue, userMessage, assistantMessage];
@@ -148,8 +187,23 @@ function ChatPage() {
 
           if (nameData.candidates && nameData.candidates[0]?.content?.parts?.[0]?.text) {
             const newTitle = nameData.candidates[0].content.parts[0].text.trim();
-            console.log("Setting new chat title:", newTitle);
+            // console.log("Setting new chat title:", newTitle);
             setChatTitle(newTitle);
+            setMessages(prev =>
+              prev.map(msg =>
+                msg.chatId === chatId && msg.chatTitle === shortId
+                  ? { ...msg, chatTitle: newTitle }
+                  : msg
+              )
+            );
+
+            setMessageStore(prev =>
+              prev.map(msg =>
+                msg.chatId === chatId && msg.chatTitle === shortId
+                  ? { ...msg, chatTitle: newTitle }
+                  : msg
+              )
+            );
           } else {
             console.warn("Title generation response did not contain expected data structure:", nameData);
           }
@@ -164,6 +218,7 @@ function ChatPage() {
       const errorMessage = Message.createErrorMessage(chatId, false, null, chatTitle);
 
       setMessages((prev) => [...prev, errorMessage]);
+      setMessageStore((prev) => [...prev, errorMessage]);
       updateContextQueue(errorMessage);
     } finally {
       setIsLoading(false);
@@ -188,10 +243,13 @@ function ChatPage() {
     }));
 
     updateThreadContextQueue(userReply);
+    setMessageStore((prev) => [...prev, userReply]);
     setIsThreadLoading(true);
 
     try {
-      const threadContext = threadContextQueue.map(msg => msg.toApiFormat());
+      const threadContext = threadContextQueue.map(msg =>
+        msg.toApiFormat ? msg.toApiFormat() : new Message(msg).toApiFormat()
+      );
       threadContext.push(userReply.toApiFormat());
 
       const data = await sendMessageToGemini(threadContext);
@@ -201,7 +259,7 @@ function ChatPage() {
         ...prev,
         replies: [...prev.replies, assistantReply],
       }));
-
+      setMessageStore((prev) => [...prev, assistantReply]);
       updateThreadContextQueue(assistantReply);
     } catch (error) {
       console.error("Error fetching from LLM in thread:", error);
@@ -224,18 +282,25 @@ function ChatPage() {
   };
 
   const startThread = (parentMessage) => {
+    const threadReplies = messageStore
+      .filter((msg) => msg.parentChatId === parentMessage.id)
+      .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+    const recentReplies = threadReplies.slice(-MAX_CONTEXT_SIZE_THREAD_CHAT + 1);
+    const newThreadContextQueue = [parentMessage, ...recentReplies];
+    setThreadContextQueue(newThreadContextQueue);
     setActiveThread({
       parent: parentMessage,
-      replies: [],
+      replies: threadReplies,
       input: "",
     });
-    setThreadContextQueue([parentMessage]);
   };
 
   useEffect(() => {
     console.log("Main context queue:", contextQueue);
     console.log("Thread context queue:", threadContextQueue);
-  }, [contextQueue, threadContextQueue]);
+    console.log("Message store:", messageStore);
+  }, [contextQueue, threadContextQueue, messageStore]);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -251,13 +316,51 @@ function ChatPage() {
     }
   };
 
+  const saveMessagesToSupabase = async (allMessages) => {
+    try {
+      const res = await fetch('http://localhost:5050/api/save-chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ messages: allMessages })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        console.log('✅ Messages saved:', data.message);
+        return true;
+      } else {
+        console.error('❌ Save failed:', data.error);
+        return false;
+      }
+    } catch (err) {
+      console.error('❌ Network/server error:', err);
+      return false;
+    }
+  };
+
   return (
     <div className={`chat-container ${activeThread ? "drawer-open" : ""}`}>
       <div className="main-chat">
         <div className="chat-header">
-          <h1 className="chat-title">
-            {chatTitle} <span className="chat-id">#{shortId}</span>
-          </h1>
+          <div className="chat-title-row">
+            <h1 className="chat-title">
+              {chatTitle} <span className="chat-id">#{shortId}</span>
+            </h1>
+            <a className="save-chat-button"
+            onClick = {async () => {
+              const success = await saveMessagesToSupabase(messageStore);
+              if (success) {
+                setMessageStore([]);
+                alert("Chat saved successfully");
+              } else {
+                alert("Failed to save chat");
+              }
+            }}
+            >Save Chat</a>
+          </div>
         </div>
 
         <div className="chat-body">
@@ -328,7 +431,6 @@ function ChatPage() {
         </div>
       </div>
 
-      {/* Thread Sidebar */}
       {activeThread && (
         <>
           <div

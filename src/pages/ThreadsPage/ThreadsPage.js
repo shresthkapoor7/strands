@@ -1,19 +1,35 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './ThreadsPage.css';
+import { customAlphabet } from 'nanoid';
 
 function Threads() {
   const navigate = useNavigate();
+  const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 10);
 
-  const dummyThreads = [
-    { id: 1, title: "Brainstorm AI Startup Ideas" },
-    { id: 2, title: "Plan Solo Europe Trip" },
-    { id: 3, title: "Deep Dive into Neural Networks" },
-    { id: 4, title: "Grocery List Chat" },
-  ];
+  const [threads, setThreads] = useState([]);
+
+  useEffect(() => {
+    const fetchThreads = async () => {
+      try {
+        const res = await fetch('https://api.strandschat.com/api/get-threads');
+        const data = await res.json();
+        setThreads(data.threads || []);
+      } catch (error) {
+        console.error('Failed to fetch threads:', error);
+      }
+    };
+
+    fetchThreads();
+  }, []);
 
   const handleCreateNewChat = () => {
-    const newChatId = Date.now();
+    const newChatId = nanoid();
     navigate(`/chat/${newChatId}`);
+  };
+
+  const handleThreadClick = (chatId) => {
+    navigate(`/chat/${chatId}`);
   };
 
   return (
@@ -21,10 +37,10 @@ function Threads() {
       <h1 className="threads-title">Your Threads</h1>
 
       <div className="threads-grid">
-        {dummyThreads.map(thread => (
-          <div key={thread.id} className="thread-card">
+        {threads.map((thread) => (
+          <div key={thread.chatId} className="thread-card" onClick={() => handleThreadClick(thread.chatId)}>
             <div className="thread-image" />
-            <div className="thread-title">{thread.title}</div>
+            <div className="thread-title">{thread.chatTitle || 'Untitled Chat'}</div>
           </div>
         ))}
 

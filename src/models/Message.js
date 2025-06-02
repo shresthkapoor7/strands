@@ -1,5 +1,14 @@
 import { v4 as uuidv4 } from 'uuid';
 
+function getDeviceId() {
+  let id = localStorage.getItem('deviceId');
+  if (!id) {
+    id = uuidv4();
+    localStorage.setItem('deviceId', id);
+  }
+  return id;
+}
+
 class Message {
   constructor({
     id = uuidv4(),
@@ -10,6 +19,7 @@ class Message {
     strand = false,
     parentChatId = null,
     chatTitle = null,
+    userId = getDeviceId(),
   }) {
     this.id = id;
     this.chatId = chatId;
@@ -19,12 +29,14 @@ class Message {
     this.strand = strand;
     this.parentChatId = parentChatId;
     this.chatTitle = chatTitle || chatId;
+    this.userId = userId;
   }
 
   toApiFormat() {
     return {
       role: this.sentBy === 0 ? "user" : "assistant",
       parts: [{ text: this.text }],
+      userId: this.userId,
     };
   }
 
@@ -57,7 +69,7 @@ class Message {
       text: "Sorry, I couldn't process your message at the moment.",
       strand,
       parentChatId,
-      chatTitle,
+      chatTitle
     });
   }
 }
