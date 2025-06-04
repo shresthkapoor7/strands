@@ -34,7 +34,6 @@ function ChatPage() {
       const res = await fetch(`https://api.strandschat.com/api/get-chat/${chatId}`);
       const data = await res.json();
       if (res.ok) {
-        console.log("Fetched messages:", data.messages);
         return data.messages;
       } else {
         console.error("Failed to fetch messages:", data.error);
@@ -183,11 +182,9 @@ function ChatPage() {
           };
 
           const nameData = await sendMessageToGemini([...updatedQueue.map(msg => msg.toApiFormat()), namePrompt]);
-          console.log("Title generation response:", nameData);
 
           if (nameData.candidates && nameData.candidates[0]?.content?.parts?.[0]?.text) {
             const newTitle = nameData.candidates[0].content.parts[0].text.trim();
-            // console.log("Setting new chat title:", newTitle);
             setChatTitle(newTitle);
             setMessages(prev =>
               prev.map(msg =>
@@ -211,7 +208,7 @@ function ChatPage() {
           console.error("Error generating chat title:", titleError);
         }
       } else {
-        console.log("Skipping title generation - need exactly one user message and one LLM response");
+        console.error("Skipping title generation - need exactly one user message and one LLM response");
       }
     } catch (error) {
       console.error("Error fetching from LLM:", error);
@@ -296,12 +293,6 @@ function ChatPage() {
     });
   };
 
-  useEffect(() => {
-    console.log("Main context queue:", contextQueue);
-    console.log("Thread context queue:", threadContextQueue);
-    console.log("Message store:", messageStore);
-  }, [contextQueue, threadContextQueue, messageStore]);
-
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -318,7 +309,7 @@ function ChatPage() {
 
   const saveMessagesToSupabase = async (allMessages) => {
     try {
-      const res = await fetch('http://localhost:5050/api/save-chat', {
+      const res = await fetch('https://api.strandschat.com/api/save-chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
