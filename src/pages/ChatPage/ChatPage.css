@@ -1,7 +1,7 @@
 :root {
   --primary-color: #3b82f6;
   --primary-hover: #2563eb;
-  --bg-light: #f9fafb;
+  --bg-light: #f0f0f0;
   --bg-white: #ffffff;
   --text-dark: #111827;
   --text-gray: #6b7280;
@@ -127,8 +127,8 @@ body.dark {
 
 .save-chat-button {
   background-color: transparent;
-  color: #3b82f6;
-  border: 1px solid #3b82f6;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
   padding: 0.4rem 0.8rem;
   border-radius: 6px;
   font-size: 0.95rem;
@@ -137,7 +137,7 @@ body.dark {
   transition: background 0.2s ease;
 }
 
-.save-chat-button:hover {
+.graph-view-button:hover {
   background-color: rgba(59, 130, 246, 0.1);
 }
 

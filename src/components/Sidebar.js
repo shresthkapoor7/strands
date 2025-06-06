@@ -41,7 +41,7 @@ function Sidebar({ isOpen, toggleSidebar }) {
             }
             onClick={toggleSidebar}
           >
-            Threads
+            Chats
           </NavLink>
 
           <NavLink
@@ -54,7 +54,6 @@ function Sidebar({ isOpen, toggleSidebar }) {
             Settings
           </NavLink>
         </div>
-        <div className="footer">Powered by Gemini / OpenAI</div>
 
         {isOpen && (
           <button className="close-sidebar" onClick={toggleSidebar}>

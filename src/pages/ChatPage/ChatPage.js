@@ -7,8 +7,8 @@ import "./ChatPage.css";
 import { sendMessageToGemini } from "../../api/gemini";
 import { useRef } from 'react';
 
-const MAX_CONTEXT_SIZE_MAIN_CHAT = 10;
-const MAX_CONTEXT_SIZE_THREAD_CHAT = 5;
+const MAX_CONTEXT_SIZE_MAIN_CHAT = parseInt(localStorage.getItem('mainChatQueueSize')) || 10;
+const MAX_CONTEXT_SIZE_THREAD_CHAT = parseInt(localStorage.getItem('threadChatQueueSize')) || 5;
 
 function ChatPage() {
   const { chatId } = useParams();
@@ -346,6 +346,7 @@ function ChatPage() {
               if (success) {
                 setMessageStore([]);
                 alert("Chat saved successfully");
+                window.location.reload();
               } else {
                 alert("Failed to save chat");
               }

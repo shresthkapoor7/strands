@@ -34,7 +34,7 @@ function Threads() {
 
   return (
     <div className="main-content">
-      <h1 className="threads-title">Your Threads</h1>
+      <h1 className="threads-title">Your Chats</h1>
 
       <div className="threads-grid">
         {threads.map((thread) => (

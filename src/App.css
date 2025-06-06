@@ -152,6 +152,20 @@ body.dark {
   text-align: center;
 }
 
+.coming-soon-badge {
+  display: inline-block;
+  margin-left: 0.6rem;
+  background-color: #2563eb;
+  color: white;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  vertical-align: middle;
+  transform: translateY(-1px);
+}
+
 /* Mobile Topbar */
 .mobile-topbar {
   display: none;
@@ -190,22 +204,47 @@ body.dark {
   text-align: center;
 }
 
-.github-link {
+.main-links {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.github-link,
+.start-chat-btn {
   font-weight: bold;
-  color: #2563eb;
-  text-decoration: none;
   font-size: 1.1rem;
-  display: inline-block;
   padding: 0.75rem 1.5rem;
-  border: 2px solid #2563eb;
   border-radius: 0.5rem;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
   transition: all 0.2s ease;
+}
+
+.github-link {
+  color: #2563eb;
+  border: 2px solid #2563eb;
+  background-color: transparent;
 }
 
 .github-link:hover {
   background-color: #2563eb;
   color: white;
-  text-decoration: none;
+}
+
+.start-chat-btn {
+  background-color: blueviolet;
+  color: white;
+  border: 2px solid transparent;
+}
+
+.start-chat-btn:hover {
+  background-color: transparent;
+  color: blueviolet;
+  border: 2px solid blueviolet;
 }
 
 .nav-button.active {
