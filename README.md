@@ -9,7 +9,10 @@
 - 🧠 Device-based persistence using localStorage (Web) and UIDevice (iOS)
 - 🧪 Gemini model integration via API
 
-**🔗 Repositories**
+🔗 **Live Website**: [strandschat.com](https://strandschat.com)
+
+### 🔗 Repositories
+
 - 🌐 Web + Backend: [github.com/shresthkapoor7/strands-backend](https://github.com/shresthkapoor7/strands-backend)
 - 📱 iOS App: [github.com/shresthkapoor7/strands-ios](https://github.com/shresthkapoor7/strands-ios)
 
@@ -31,3 +34,20 @@ Planned next:
 - ⏳ Authentication + syncing via Supabase
 
 The iOS app shares the same backend as the web version, ensuring consistent conversation state across platforms in future releases.
+
+---
+
+### 📸 Screenshots
+
+<p align="center">
+  <img src="./1.jpg" width="300" />
+  <img src="./2.jpg" width="300" />
+</p>
+<p align="center">
+  <img src="./3.jpg" width="300" />
+  <img src="./4.jpg" width="300" />
+</p>
+<p align="center">
+  <img src="./5.jpg" width="300" />
+  <img src="./6.jpg" width="300" />
+</p>
