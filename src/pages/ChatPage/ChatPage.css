@@ -157,6 +157,45 @@ body.dark {
   }
 }
 
+.code-block-container {
+  position: relative;
+  background: #1e1e1e;
+  border-radius: 8px;
+  overflow-x: auto;
+  padding: 1rem;
+  margin-top: 1rem;
+  color: #f8f8f2;
+}
+
+.code-block-container pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.code-block-container code {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.95rem;
+}
+
+.copy-button {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: #444;
+  color: #fff;
+  border: none;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.copy-button:hover {
+  background: #666;
+}
+
 .chat-body {
   display: flex;
   flex-direction: column;

@@ -369,7 +369,31 @@ function ChatPage() {
                     className={`chat-bubble ${msg.sentBy === 0 ? "user" : "assistant"
                       }`}
                   >
-                    <ReactMarkdown>{msg.text}</ReactMarkdown>
+                    <ReactMarkdown
+  components={{
+    code({ node, inline, className, children, ...props }) {
+      return !inline ? (
+        <div className="code-block-container">
+          <pre>
+            <code className={className} {...props}>
+              {children}
+            </code>
+          </pre>
+          <button
+            className="copy-button"
+            onClick={() => navigator.clipboard.writeText(children)}
+          >
+          Copy
+          </button>
+        </div>
+      ) : (
+        <code className={className} {...props}>{children}</code>
+      );
+    }
+  }}
+>
+  {msg.text}
+</ReactMarkdown>
 
                     {/* Strand Off Button */}
                     {msg.sentBy === 1 && (
@@ -454,7 +478,31 @@ function ChatPage() {
                   key={reply.id}
                   className={`thread-bubble ${reply.sentBy === 0 ? 'user' : 'assistant'}`}
                 >
-                  <ReactMarkdown>{reply.text}</ReactMarkdown>
+                  <ReactMarkdown
+                  components={{
+                    code({ node, inline, className, children, ...props }) {
+                      return !inline ? (
+                        <div className="code-block-container">
+                          <pre>
+                            <code className={className} {...props}>
+                              {children}
+                            </code>
+                          </pre>
+                          <button
+                            className="copy-button"
+                            onClick={() => navigator.clipboard.writeText(children)}
+                          >
+                            Copy
+                          </button>
+                        </div>
+                      ) : (
+                        <code className={className} {...props}>{children}</code>
+                      );
+                    }
+                  }}
+                  >
+                    {reply.text}
+                  </ReactMarkdown>
                 </div>
               ))}
               {isThreadLoading && (
