@@ -9,6 +9,25 @@
 - 🧠 Device-based persistence using localStorage (Web) and UIDevice (iOS)
 - 🧪 Gemini model integration via API
 
-### 📱 iOS Support (Coming Soon)
+**🔗 Repositories**
+- 🌐 Web + Backend: [github.com/shresthkapoor7/strands-backend](https://github.com/shresthkapoor7/strands-backend)
+- 📱 iOS App: [github.com/shresthkapoor7/strands-ios](https://github.com/shresthkapoor7/strands-ios)
 
-A native iOS app is in progress, using SwiftUI. It will include full parity with the web version and support for saving, threading, and context queue tuning — with a shared backend and isolated device logic for now.
+---
+
+### 📱 iOS Support (In Progress)
+
+The native SwiftUI-based iOS app is actively under development. It already supports:
+
+- ✅ Full chat interface with context queue
+- ✅ Gemini API integration
+- ✅ Threaded view navigation with new window stack
+- ✅ Auto-title generation based on first response
+- ✅ Bottom navigation with tab bar
+
+Planned next:
+
+- ⏳ Saving chat history
+- ⏳ Authentication + syncing via Supabase
+
+The iOS app shares the same backend as the web version, ensuring consistent conversation state across platforms in future releases.
