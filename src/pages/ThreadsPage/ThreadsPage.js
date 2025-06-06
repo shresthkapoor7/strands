@@ -12,7 +12,16 @@ function Threads() {
   useEffect(() => {
     const fetchThreads = async () => {
       try {
-        const res = await fetch('https://api.strandschat.com/api/get-threads');
+        const deviceId = localStorage.getItem("deviceId");
+
+        const res = await fetch('https://api.strandschat.com/api/get-threads', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ userId: deviceId })
+        });
+
         const data = await res.json();
         setThreads(data.threads || []);
       } catch (error) {
