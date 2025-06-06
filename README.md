@@ -1,5 +1,3 @@
----
-
 ## ✨ About This Project
 
 **Strands** is a personal conversational workspace built on top of modern AI models like Gemini. It introduces a unique threaded chat interface that allows users to branch off specific messages, creating deep, organized conversations — similar to Slack threads, but optimized for AI interaction.
@@ -14,5 +12,3 @@
 ### 📱 iOS Support (Coming Soon)
 
 A native iOS app is in progress, using SwiftUI. It will include full parity with the web version and support for saving, threading, and context queue tuning — with a shared backend and isolated device logic for now.
-
----
