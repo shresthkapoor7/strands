@@ -25,6 +25,7 @@ function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isThreadLoading, setIsThreadLoading] = useState(false);
   const [messageStore, setMessageStore] = useState([]);
+  const [browserSearchEnabled, setBrowserSearchEnabled] = useState(false);
 
   const textareaRef = useRef(null);
   const threadTextareaRef = useRef(null);
@@ -162,8 +163,11 @@ function ChatPage() {
       const conversationContext = contextQueue.map(msg => msg.toApiFormat());
       conversationContext.push(userMessage.toApiFormat());
 
-      const data = await sendMessageToGemini(conversationContext);
+      const data = await sendMessageToGemini(conversationContext, browserSearchEnabled);
       const assistantMessage = Message.fromApiResponse(chatId, data, false, null, chatTitle);
+      if (data.sources) {
+        assistantMessage.text += `\n\n---\n**Sources:**\n${data.sources}`;
+      }
 
       setMessages((prev) => [...prev, assistantMessage]);
       setMessageStore((prev) => [...prev, assistantMessage]);
@@ -434,15 +438,19 @@ function ChatPage() {
               onKeyDown={handleKeyDown}
               disabled={isLoading}
             />
-            {userInput.trim() !== "" && (
-              <button
+            <button
                 className="send-icon-button"
                 onClick={handleSend}
-                disabled={isLoading}
+                disabled={userInput.trim() === "" || isLoading}
               >
                 <span className="arrow-icon">↑</span>
               </button>
-            )}
+              <button
+                className={`browser-icon-button ${browserSearchEnabled ? 'enabled' : 'disabled'}`}
+                onClick={() => setBrowserSearchEnabled(prev => !prev)}
+              >
+                🌐
+              </button>
           </div>
         </div>
       </div>

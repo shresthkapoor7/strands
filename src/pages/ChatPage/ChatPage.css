@@ -256,6 +256,26 @@ body.dark {
   align-self: flex-start;
 }
 
+.chat-bubble a {
+  color: #82b1ff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.chat-bubble a:hover {
+  color: #a9cfff;
+  text-decoration: underline;
+}
+
+.chat-bubble ul {
+  margin-top: 0.5rem;
+  padding-left: 1.5rem;
+}
+
+.chat-bubble li {
+  margin-bottom: 0.25rem;
+}
+
 .strand-off {
   margin-top: 0.75rem;
   margin-bottom: 0.75rem;
@@ -305,7 +325,7 @@ body.dark {
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.05);
 }
 
-.send-icon-button, .file-icon-button {
+.send-icon-button, .browser-icon-button {
   position: absolute;
   right: 0.75rem;
   bottom: 0.75rem;
@@ -322,11 +342,29 @@ body.dark {
   cursor: pointer;
 }
 
+.browser-icon-button {
+  right: 3.5rem;
+}
+
+.send-icon-button:disabled, .browser-icon-button:disabled {
+  background-color: #3b3b3b;
+  color: var(--text-gray);
+  cursor: not-allowed;
+}
+
+.browser-icon-button.enabled {
+  background-color: var(--primary-color);
+}
+
+.browser-icon-button.disabled {
+  background-color: #3b3b3b;
+}
+
 .send-icon-button {
   align-self: flex-start;
 }
 
-.file-icon-button:hover, .send-icon-button:hover {
+.send-icon-button:hover, .browser-icon-button:hover {
   transform: scale(1.05);
 }
 
