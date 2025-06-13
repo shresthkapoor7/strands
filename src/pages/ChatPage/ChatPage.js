@@ -10,6 +10,23 @@ import { useRef } from 'react';
 const MAX_CONTEXT_SIZE_MAIN_CHAT = parseInt(localStorage.getItem('mainChatQueueSize')) || 10;
 const MAX_CONTEXT_SIZE_THREAD_CHAT = parseInt(localStorage.getItem('threadChatQueueSize')) || 5;
 
+const AI_MODELS = [
+  { id: 'deepseek/deepseek-r1:free',     name: 'DeepSeek R1 (free)',        icon: '🔍' },
+  { id: 'google/gemini-2.0-flash-exp:free',  name: 'Gemini Flash 2.0 (free)',   icon: '⚡' },
+  { id: 'google/gemini-2.5-pro-exp-03-25:free', name: 'Gemini 2.5 Pro Exp (free)', icon: '🚀' }
+];
+
+const moreModels = [
+  { id: 'deepseek-qwen', icon: '🌀', name: 'DeepSeek: Deepseek R1 0528 Qwen...', free: true },
+  { id: 'deepseek', icon: '🌀', name: 'DeepSeek: R1 0528', free: true },
+  { id: 'sarvam', icon: '🤗', name: 'Sarvam AI: Sarvam-M', free: true },
+  { id: 'mistral', icon: '🏗️', name: 'Mistral: Devstral Small', free: true },
+  { id: 'gemma', icon: '🔷', name: 'Google: Gemma 3n 4B', free: true },
+  { id: 'llama', icon: 'Ⓜ️', name: 'Meta: Llama 3.3 8B Instruct', free: true },
+  { id: 'nous', icon: '🕵️', name: 'Nous: DeepHermes 3 Mistral 24B Pr...', free: true },
+  { id: 'phi', icon: '🟠', name: 'Microsoft: Phi 4 Reasoning Plus', free: true },
+];
+
 function ChatPage() {
   const { chatId } = useParams();
   const shortId = chatId.slice(-5);
@@ -25,6 +42,8 @@ function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isThreadLoading, setIsThreadLoading] = useState(false);
   const [messageStore, setMessageStore] = useState([]);
+  const [selectedModel, setSelectedModel] = useState('gemini');
+  const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
 
   const textareaRef = useRef(null);
   const threadTextareaRef = useRef(null);
@@ -54,7 +73,7 @@ function ChatPage() {
       setMessageStore(parsedMessages);
 
       if (parsedMessages.length > 0) {
-      setChatTitle(parsedMessages[0].chatTitle);
+        setChatTitle(parsedMessages[0].chatTitle);
       }
 
       const lastTenMain = mainMessages.slice(-10);
@@ -332,6 +351,11 @@ function ChatPage() {
     }
   };
 
+  const handleModelSelect = (modelId) => {
+    setSelectedModel(modelId);
+    setIsModelDropdownOpen(false);
+  };
+
   return (
     <div className={`chat-container ${activeThread ? "drawer-open" : ""}`}>
       <div className="main-chat">
@@ -341,16 +365,16 @@ function ChatPage() {
               {chatTitle} <span className="chat-id">#{shortId}</span>
             </h1>
             <a className="save-chat-button"
-            onClick = {async () => {
-              const success = await saveMessagesToSupabase(messageStore);
-              if (success) {
-                setMessageStore([]);
-                alert("Chat saved successfully");
-                window.location.reload();
-              } else {
-                alert("Failed to save chat");
-              }
-            }}
+              onClick={async () => {
+                const success = await saveMessagesToSupabase(messageStore);
+                if (success) {
+                  setMessageStore([]);
+                  alert("Chat saved successfully");
+                  window.location.reload();
+                } else {
+                  alert("Failed to save chat");
+                }
+              }}
             >Save Chat</a>
           </div>
         </div>
@@ -370,30 +394,30 @@ function ChatPage() {
                       }`}
                   >
                     <ReactMarkdown
-  components={{
-    code({ node, inline, className, children, ...props }) {
-      return !inline ? (
-        <div className="code-block-container">
-          <pre>
-            <code className={className} {...props}>
-              {children}
-            </code>
-          </pre>
-          <button
-            className="copy-button"
-            onClick={() => navigator.clipboard.writeText(children)}
-          >
-          Copy
-          </button>
-        </div>
-      ) : (
-        <code className={className} {...props}>{children}</code>
-      );
-    }
-  }}
->
-  {msg.text}
-</ReactMarkdown>
+                      components={{
+                        code({ node, inline, className, children, ...props }) {
+                          return !inline ? (
+                            <div className="code-block-container">
+                              <pre>
+                                <code className={className} {...props}>
+                                  {children}
+                                </code>
+                              </pre>
+                              <button
+                                className="copy-button"
+                                onClick={() => navigator.clipboard.writeText(children)}
+                              >
+                                Copy
+                              </button>
+                            </div>
+                          ) : (
+                            <code className={className} {...props}>{children}</code>
+                          );
+                        }
+                      }}
+                    >
+                      {msg.text}
+                    </ReactMarkdown>
 
                     {/* Strand Off Button */}
                     {msg.sentBy === 1 && (
@@ -434,15 +458,68 @@ function ChatPage() {
               onKeyDown={handleKeyDown}
               disabled={isLoading}
             />
-            {userInput.trim() !== "" && (
+            <div className="input-controls">
+              <div className="model-selector">
+                <button
+                  className="model-selector-button"
+                  onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
+                  aria-expanded={isModelDropdownOpen}
+                >
+                  {AI_MODELS.find(m => m.id === selectedModel)?.icon} {AI_MODELS.find(m => m.id === selectedModel)?.name}
+                  <span className="dropdown-arrow">▼</span>
+                </button>
+                {isModelDropdownOpen && (
+                  <div className="model-dropdown">
+                    {AI_MODELS.map(model => (
+                      <div key={model.id} className="model-option-container">
+                        <button
+                          className={`model-option ${selectedModel === model.id ? 'selected' : ''}`}
+                          onClick={() => handleModelSelect(model.id)}
+                        >
+                          <div className="model-info">
+                            <div className="model-name">
+                              {model.icon} {model.name}
+                            </div>
+                            <div className="model-description">
+                              {model.id === 'gemini' && 'Google\'s advanced AI model'}
+                              {model.id === 'chatgpt' && 'OpenAI\'s conversational AI'}
+                              {model.id === 'anthropic' && 'Smart, efficient model for everyday use'}
+                            </div>
+                          </div>
+                          {selectedModel === model.id && (
+                            <div className="selected-checkmark">✓</div>
+                          )}
+                          {model.id === 'anthropic' && (
+                            <div className="pro-badge">PRO</div>
+                          )}
+                        </button>
+                      </div>
+                    ))}
+                    <div className="more-models-list">
+                      {moreModels.map((model, idx) => (
+                        <div
+                          key={model.id}
+                          className={`more-model-item${selectedModel === model.id ? ' selected' : ''}`}
+                          onClick={() => handleModelSelect(model.id)}
+                        >
+                          <span className="more-model-icon">{model.icon}</span>
+                          <span className="more-model-name">{model.name}</span>
+                          {model.free && <span className="more-model-free">(free)</span>}
+                          {selectedModel === model.id && <span className="selected-checkmark">✓</span>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
               <button
-                className="send-icon-button"
+                className={`send-icon-button ${userInput.trim() === "" ? 'disabled' : ''}`}
                 onClick={handleSend}
-                disabled={isLoading}
+                disabled={isLoading || userInput.trim() === ""}
               >
                 <span className="arrow-icon">↑</span>
               </button>
-            )}
+            </div>
           </div>
         </div>
       </div>
@@ -479,27 +556,27 @@ function ChatPage() {
                   className={`thread-bubble ${reply.sentBy === 0 ? 'user' : 'assistant'}`}
                 >
                   <ReactMarkdown
-                  components={{
-                    code({ node, inline, className, children, ...props }) {
-                      return !inline ? (
-                        <div className="code-block-container">
-                          <pre>
-                            <code className={className} {...props}>
-                              {children}
-                            </code>
-                          </pre>
-                          <button
-                            className="copy-button"
-                            onClick={() => navigator.clipboard.writeText(children)}
-                          >
-                            Copy
-                          </button>
-                        </div>
-                      ) : (
-                        <code className={className} {...props}>{children}</code>
-                      );
-                    }
-                  }}
+                    components={{
+                      code({ node, inline, className, children, ...props }) {
+                        return !inline ? (
+                          <div className="code-block-container">
+                            <pre>
+                              <code className={className} {...props}>
+                                {children}
+                              </code>
+                            </pre>
+                            <button
+                              className="copy-button"
+                              onClick={() => navigator.clipboard.writeText(children)}
+                            >
+                              Copy
+                            </button>
+                          </div>
+                        ) : (
+                          <code className={className} {...props}>{children}</code>
+                        );
+                      }
+                    }}
                   >
                     {reply.text}
                   </ReactMarkdown>
