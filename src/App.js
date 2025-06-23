@@ -1,4 +1,4 @@
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import MainContent from './components/MainContent';
 import './App.css';
@@ -11,7 +11,6 @@ function App() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
 
-  // Apply dark mode from localStorage on load
   useEffect(() => {
     const storedTheme = localStorage.getItem('theme');
     const isDark = storedTheme === 'dark';
