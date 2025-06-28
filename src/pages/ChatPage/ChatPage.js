@@ -6,6 +6,7 @@ import { useCallback } from 'react';
 import "./ChatPage.css";
 import { sendMessageToGemini } from "../../api/gemini";
 import { useRef } from 'react';
+import { sendMessageStream } from "../../api/chat";
 
 const MAX_CONTEXT_SIZE_MAIN_CHAT = parseInt(localStorage.getItem('mainChatQueueSize')) || 10;
 const MAX_CONTEXT_SIZE_THREAD_CHAT = parseInt(localStorage.getItem('threadChatQueueSize')) || 5;
@@ -26,6 +27,19 @@ function ChatPage() {
   const [isThreadLoading, setIsThreadLoading] = useState(false);
   const [messageStore, setMessageStore] = useState([]);
   const [browserSearchEnabled, setBrowserSearchEnabled] = useState(false);
+  const [llm, setLlm] = useState("maverick");
+  const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
+  const modelDropdownRef = useRef(null);
+
+  const models = [
+    { name: "maverick", icon: "Ⓜ️", modelFull: "meta-llama/llama-4-maverick:free"},
+    { name: "gemma", icon: "🐵", modelFull: "google/gemma-3n-e4b-it:free"},
+    { name: "mistral", icon: "🐯", modelFull: "mistralai/mistral-7b-instruct:free"},
+    { name: "deepseek", icon: "🐶", modelFull: "deepseek/deepseek-r1-0528:free"},
+    { name: "deepseek-chat", icon: "🌀", modelFull: "deepseek/deepseek-chat-v3-0324:free"},
+    { name: "qwen3", icon: "🏗️", modelFull: "qwen/qwen3-235b-a22b:free"},
+    { name: "gemini", icon: "🟠", modelFull: "google/gemini-2.5-flash"},
+  ]
 
   const textareaRef = useRef(null);
   const threadTextareaRef = useRef(null);
@@ -35,7 +49,15 @@ function ChatPage() {
       const res = await fetch(`https://api.strandschat.com/api/get-chat/${chatId}`);
       const data = await res.json();
       if (res.ok) {
-        return data.messages;
+
+        const sortedMessages = data.messages.sort((a, b) => {
+          const timeA = new Date(a.createdAt).getTime();
+          const timeB = new Date(b.createdAt).getTime();
+          if (timeA !== timeB) return timeA - timeB;
+          return a.sentBy - b.sentBy;
+        });
+
+        return sortedMessages;
       } else {
         console.error("Failed to fetch messages:", data.error);
         return [];
@@ -55,7 +77,7 @@ function ChatPage() {
       setMessageStore(parsedMessages);
 
       if (parsedMessages.length > 0) {
-      setChatTitle(parsedMessages[0].chatTitle);
+        setChatTitle(parsedMessages[0].chatTitle);
       }
 
       const lastTenMain = mainMessages.slice(-10);
@@ -148,6 +170,22 @@ function ChatPage() {
     return sentences.slice(0, maxSentences).join(' ') + '...';
   };
 
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (modelDropdownRef.current && !modelDropdownRef.current.contains(event.target)) {
+        setModelDropdownOpen(false);
+      }
+    }
+    if (modelDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [modelDropdownOpen]);
+
   const handleSend = async () => {
     if (userInput.trim() === "") return;
 
@@ -159,18 +197,62 @@ function ChatPage() {
     setUserInput("");
     setIsLoading(true);
 
-    try {
-      const conversationContext = contextQueue.map(msg => msg.toApiFormat());
-      conversationContext.push(userMessage.toApiFormat());
+    const assistantMessage = new Message({
+      chatId,
+      sentBy: 1,
+      text: "",
+      strand: false,
+      parentChatId: null,
+      chatTitle
+    });
 
-      const data = await sendMessageToGemini(conversationContext, browserSearchEnabled);
-      const assistantMessage = Message.fromApiResponse(chatId, data, false, null, chatTitle);
-      if (data.sources) {
-        assistantMessage.text += `\n\n---\n**Sources:**\n${data.sources}`;
+    setMessages((prev) => [...prev, assistantMessage]);
+    setMessageStore((prev) => [...prev, assistantMessage]);
+
+    try {
+      const conversationContext = [...contextQueue, userMessage].map(msg => msg.toApiFormat());
+      if (!browserSearchEnabled && llm !== "gemini") {
+        await sendMessageStream({
+          llm: llm,
+          messages: conversationContext,
+          onStreamChunk: (parsedChunk) => {
+            assistantMessage.text += parsedChunk.text || "";
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === assistantMessage.id
+                  ? { ...msg, text: assistantMessage.text }
+                  : msg
+              )
+            );
+          }
+        });
       }
 
-      setMessages((prev) => [...prev, assistantMessage]);
-      setMessageStore((prev) => [...prev, assistantMessage]);
+      else {
+        let accumulatedText = "";
+
+        await sendMessageToGemini(
+          conversationContext,
+          browserSearchEnabled,
+          (chunk) => {
+            if (chunk.text) {
+              accumulatedText += chunk.text;
+              setMessages((prev) =>
+                prev.map((msg) =>
+                  msg.id === assistantMessage.id
+                    ? { ...msg, text: accumulatedText }
+                    : msg
+                )
+              );
+            }
+
+            if (chunk.sources) {
+              accumulatedText += `\n\n**Sources:**\n${chunk.sources}`;
+            }
+          }
+        );
+      }
+
       updateContextQueue(assistantMessage);
 
       const updatedQueue = [...contextQueue, userMessage, assistantMessage];
@@ -182,14 +264,28 @@ function ChatPage() {
         try {
           const namePrompt = {
             role: "user",
-            parts: [{ text: "Based on this conversation, generate a short, descriptive title (max 5 words) for this chat. Only respond with the title, nothing else." }]
+            parts: [{
+              text: "Based on this conversation, generate a short, descriptive title (max 5 words) for this chat. Only respond with the title, nothing else."
+            }]
           };
 
-          const nameData = await sendMessageToGemini([...updatedQueue.map(msg => msg.toApiFormat()), namePrompt]);
+          let titleText = "";
 
-          if (nameData.candidates && nameData.candidates[0]?.content?.parts?.[0]?.text) {
-            const newTitle = nameData.candidates[0].content.parts[0].text.trim();
+          await sendMessageToGemini(
+            [...updatedQueue.map(msg => msg.toApiFormat()), namePrompt],
+            browserSearchEnabled,
+            (chunk) => {
+              if (chunk.text) {
+                titleText += chunk.text;
+              }
+            },
+            true
+          );
+
+          const newTitle = titleText.trim();
+          if (newTitle) {
             setChatTitle(newTitle);
+
             setMessages(prev =>
               prev.map(msg =>
                 msg.chatId === chatId && msg.chatTitle === shortId
@@ -205,19 +301,14 @@ function ChatPage() {
                   : msg
               )
             );
-          } else {
-            console.warn("Title generation response did not contain expected data structure:", nameData);
           }
         } catch (titleError) {
           console.error("Error generating chat title:", titleError);
         }
-      } else {
-        console.error("Skipping title generation - need exactly one user message and one LLM response");
       }
     } catch (error) {
-      console.error("Error fetching from LLM:", error);
+      console.error("Streaming error:", error);
       const errorMessage = Message.createErrorMessage(chatId, false, null, chatTitle);
-
       setMessages((prev) => [...prev, errorMessage]);
       setMessageStore((prev) => [...prev, errorMessage]);
       updateContextQueue(errorMessage);
@@ -235,7 +326,7 @@ function ChatPage() {
       true,
       activeThread.parent.id,
       chatTitle
-    )
+    );
 
     setActiveThread((prev) => ({
       ...prev,
@@ -247,20 +338,64 @@ function ChatPage() {
     setMessageStore((prev) => [...prev, userReply]);
     setIsThreadLoading(true);
 
+    const assistantReply = new Message({
+      chatId,
+      sentBy: 1,
+      text: "",
+      strand: true,
+      parentChatId: activeThread.parent.id,
+      chatTitle
+    });
+
+    setActiveThread((prev) => ({
+      ...prev,
+      replies: [...prev.replies, assistantReply],
+    }));
+
+    setMessageStore((prev) => [...prev, assistantReply]);
+
     try {
       const threadContext = threadContextQueue.map(msg =>
         msg.toApiFormat ? msg.toApiFormat() : new Message(msg).toApiFormat()
       );
       threadContext.push(userReply.toApiFormat());
+      if (llm === "gemini") {
+        let accumulatedText = "";
 
-      const data = await sendMessageToGemini(threadContext);
-      const assistantReply = Message.fromApiResponse(chatId, data, true, activeThread.parent.id, chatTitle);
-
-      setActiveThread((prev) => ({
-        ...prev,
-        replies: [...prev.replies, assistantReply],
-      }));
-      setMessageStore((prev) => [...prev, assistantReply]);
+        await sendMessageToGemini(
+          threadContext,
+          browserSearchEnabled,
+          (chunk) => {
+            if (chunk.text) {
+              accumulatedText += chunk.text;
+              setActiveThread((prev) => ({
+                ...prev,
+                replies: prev.replies.map((msg) =>
+                  msg.id === assistantReply.id
+                    ? { ...msg, text: accumulatedText }
+                    : msg
+                ),
+              }));
+            }
+          }
+        );
+      }
+      else {
+        await sendMessageStream({
+          llm: llm,
+          messages: threadContext,
+          onStreamChunk: (parsedChunk) => {
+            assistantReply.text += parsedChunk.text;
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === assistantReply.id
+                  ? { ...msg, text: assistantReply.text }
+                  : msg
+              )
+            );
+          }
+        });
+      }
       updateThreadContextQueue(assistantReply);
     } catch (error) {
       console.error("Error fetching from LLM in thread:", error);
@@ -344,17 +479,44 @@ function ChatPage() {
             <h1 className="chat-title">
               {chatTitle} <span className="chat-id">#{shortId}</span>
             </h1>
+            <div className="model-dropdown-wrapper" ref={modelDropdownRef}>
+              <button
+                className="model-dropdown-btn"
+                onClick={() => setModelDropdownOpen((open) => !open)}
+              >
+                {models.find((m) => m.name === llm)?.icon} {models.find((m) => m.name === llm)?.modelFull}
+                <span style={{ marginLeft: 6 }}>▼</span>
+              </button>
+              {modelDropdownOpen && (
+                <div className="model-dropdown-menu">
+                  {models.map((model) => (
+                    <div
+                      key={model.name}
+                      className={`model-dropdown-item${llm === model.name ? ' selected' : ''}`}
+                      onClick={() => {
+                        setLlm(model.name);
+                        setModelDropdownOpen(false);
+                      }}
+                    >
+                      <span className="model-icon">{model.icon}</span>
+                      <span className="model-full">{model.modelFull}</span>
+                      {llm === model.name && <span className="model-check">✔</span>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
             <a className="save-chat-button"
-            onClick = {async () => {
-              const success = await saveMessagesToSupabase(messageStore);
-              if (success) {
-                setMessageStore([]);
-                alert("Chat saved successfully");
-                window.location.reload();
-              } else {
-                alert("Failed to save chat");
-              }
-            }}
+              onClick={async () => {
+                const success = await saveMessagesToSupabase(messageStore);
+                if (success) {
+                  setMessageStore([]);
+                  alert("Chat saved successfully");
+                  window.location.reload();
+                } else {
+                  alert("Failed to save chat");
+                }
+              }}
             >Save Chat</a>
           </div>
         </div>
@@ -374,30 +536,30 @@ function ChatPage() {
                       }`}
                   >
                     <ReactMarkdown
-  components={{
-    code({ node, inline, className, children, ...props }) {
-      return !inline ? (
-        <div className="code-block-container">
-          <pre>
-            <code className={className} {...props}>
-              {children}
-            </code>
-          </pre>
-          <button
-            className="copy-button"
-            onClick={() => navigator.clipboard.writeText(children)}
-          >
-          Copy
-          </button>
-        </div>
-      ) : (
-        <code className={className} {...props}>{children}</code>
-      );
-    }
-  }}
->
-  {msg.text}
-</ReactMarkdown>
+                      components={{
+                        code({ node, inline, className, children, ...props }) {
+                          return !inline ? (
+                            <div className="code-block-container">
+                              <pre>
+                                <code className={className} {...props}>
+                                  {children}
+                                </code>
+                              </pre>
+                              <button
+                                className="copy-button"
+                                onClick={() => navigator.clipboard.writeText(children)}
+                              >
+                                Copy
+                              </button>
+                            </div>
+                          ) : (
+                            <code className={className} {...props}>{children}</code>
+                          );
+                        }
+                      }}
+                    >
+                      {msg.text}
+                    </ReactMarkdown>
 
                     {/* Strand Off Button */}
                     {msg.sentBy === 1 && (
@@ -439,18 +601,19 @@ function ChatPage() {
               disabled={isLoading}
             />
             <button
-                className="send-icon-button"
-                onClick={handleSend}
-                disabled={userInput.trim() === "" || isLoading}
-              >
-                <span className="arrow-icon">↑</span>
-              </button>
-              <button
-                className={`browser-icon-button ${browserSearchEnabled ? 'enabled' : 'disabled'}`}
-                onClick={() => setBrowserSearchEnabled(prev => !prev)}
-              >
-                🌐
-              </button>
+              className="send-icon-button"
+              onClick={handleSend}
+              disabled={userInput.trim() === "" || isLoading}
+            >
+              <span className="arrow-icon">↑</span>
+            </button>
+            {/* <button
+              hidden={true}
+              className={`browser-icon-button ${browserSearchEnabled ? 'enabled' : 'disabled'}`}
+              onClick={() => setBrowserSearchEnabled(prev => !prev)}
+            >
+              🌐
+            </button> */}
           </div>
         </div>
       </div>
@@ -487,27 +650,27 @@ function ChatPage() {
                   className={`thread-bubble ${reply.sentBy === 0 ? 'user' : 'assistant'}`}
                 >
                   <ReactMarkdown
-                  components={{
-                    code({ node, inline, className, children, ...props }) {
-                      return !inline ? (
-                        <div className="code-block-container">
-                          <pre>
-                            <code className={className} {...props}>
-                              {children}
-                            </code>
-                          </pre>
-                          <button
-                            className="copy-button"
-                            onClick={() => navigator.clipboard.writeText(children)}
-                          >
-                            Copy
-                          </button>
-                        </div>
-                      ) : (
-                        <code className={className} {...props}>{children}</code>
-                      );
-                    }
-                  }}
+                    components={{
+                      code({ node, inline, className, children, ...props }) {
+                        return !inline ? (
+                          <div className="code-block-container">
+                            <pre>
+                              <code className={className} {...props}>
+                                {children}
+                              </code>
+                            </pre>
+                            <button
+                              className="copy-button"
+                              onClick={() => navigator.clipboard.writeText(children)}
+                            >
+                              Copy
+                            </button>
+                          </div>
+                        ) : (
+                          <code className={className} {...props}>{children}</code>
+                        );
+                      }
+                    }}
                   >
                     {reply.text}
                   </ReactMarkdown>
