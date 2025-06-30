@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { customAlphabet } from 'nanoid';
 import { useState, useEffect } from 'react';
+import './MainContent.css';
 
 function MainContent() {
   const navigate = useNavigate();
@@ -95,6 +96,11 @@ function MainContent() {
           </div>
         </div>
       </main>
+      <footer className="landing-footer">
+        <p>
+          Made by Shresth Kapoor. View codebase on <a href="https://github.com/shresthkapoor7/strands" target="_blank" rel="noopener noreferrer">GitHub</a>.
+        </p>
+      </footer>
     </div>
   );
 }

@@ -1,0 +1,15 @@
+.landing-footer {
+  text-align: center;
+  padding: 1rem 0;
+  font-size: 0.875rem;
+  color: #a0aec0;
+}
+
+.landing-footer a {
+  color: #a0aec0;
+  text-decoration: underline;
+}
+
+.landing-footer a:hover {
+  color: #e2e8f0;
+}
