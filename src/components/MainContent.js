@@ -1,54 +1,100 @@
 import { useNavigate } from 'react-router-dom';
 import { customAlphabet } from 'nanoid';
+import { useState, useEffect } from 'react';
 
 function MainContent() {
   const navigate = useNavigate();
   const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 10);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [isMobileMenuOpen]);
 
   const handleStartChat = () => {
     const newChatId = nanoid();
     navigate(`/chat/${newChatId}`);
   };
 
+  const closeMenuAndNavigate = (path) => {
+    setIsMobileMenuOpen(false);
+    navigate(path);
+  };
+
   return (
-    <div className="main-content">
-      <h1 className="main-title">Welcome to Strands 👋</h1>
-
-      <p className="main-description">
-        <strong>Strands</strong> is your personal conversational space — powered by <strong>Gemini</strong> and built for deep, threaded conversations.
-      </p>
-
-      <p className="main-description">
-        Instead of a flat, endless chat history, Strands uses a smart context queue to carry forward the most relevant parts of your conversation — helping you explore branches without losing focus.
-      </p>
-
-      <p className="main-description">
-        ✨ Think of it like Slack threads meets ChatGPT — but purpose-built for structured, thoughtful AI conversations.
-      </p>
-
-      <p className="main-description">
-        Whether you're brainstorming, researching, or learning something new, Strands helps you stay organized and think clearly.
-      </p>
-
-      <p className="main-description" style={{ fontStyle: "italic", color: "#aaa" }}>
-  Later iterations of the app will incorporate support for more AI models and give users direct control over which context gets passed into each message.
-  <span className="coming-soon-badge">Coming Soon</span>
-</p>
-
-      <div className="main-links">
-        <a
-          href="https://github.com/shresthkapoor7/strands"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="github-link"
+    <div className="landing-root">
+      <header className="landing-header">
+        <div className="landing-logo">Strands</div>
+        <div className="landing-nav">
+          <a href="/chat" className="landing-nav-link">Chats</a>
+          <a href="/settings" className="landing-nav-link">Settings</a>
+          <button className="landing-get-started" onClick={handleStartChat}>
+            Start a new Chat
+          </button>
+        </div>
+        <button
+          className="mobile-nav-toggle"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          aria-label="Toggle navigation"
         >
-          View Project on GitHub 🚀
-        </a>
-
-        <button className="start-chat-btn" onClick={handleStartChat}>
-          Start a New Chat 💬
+          {isMobileMenuOpen ? '✕' : '☰'}
         </button>
-      </div>
+      </header>
+
+      {isMobileMenuOpen && (
+        <div className="mobile-nav-menu">
+          <a onClick={() => closeMenuAndNavigate('/threads')} className="landing-nav-link">Chats</a>
+          <a onClick={() => closeMenuAndNavigate('/settings')} className="landing-nav-link">Settings</a>
+          <button className="landing-get-started" onClick={() => {
+            setIsMobileMenuOpen(false);
+            handleStartChat();
+          }}>
+            Start a new Chat
+          </button>
+        </div>
+      )}
+
+      <main className="landing-main">
+        <h1 className="landing-title">Meet Strands</h1>
+        <p className="landing-description">
+          Strands is a next generation AI assistant built for deep, structured conversations. Stay organized, explore ideas, and do your best work with context-aware threads.
+        </p>
+        <div className="landing-showcase">
+            <img src="animated_branch_tree.gif" alt="Animated pixel art" className="landing-gif" />
+          <div id="features" className="landing-features">
+            <div className="landing-feature">
+              <span className="feature-icon">🧠</span>
+              <div>
+                <h3 className="feature-title">Think in threads</h3>
+                <p className="feature-desc">Break free from linear chats. Strands lets you create contextual branches — so you can explore ideas, backtrack, and revisit thoughts without losing the flow.</p>
+              </div>
+            </div>
+            <div className="feature-divider" />
+            <div className="landing-feature">
+              <span className="feature-icon">⚡</span>
+              <div>
+                <h3 className="feature-title">Powered by Streaming AI</h3>
+                <p className="feature-desc">Experience low-latency responses with streaming support for Gemini and other cutting-edge LLMs via OpenRouter integration.</p>
+              </div>
+            </div>
+            <div className="feature-divider" />
+            <div className="landing-feature">
+              <span className="feature-icon">🤝</span>
+              <div>
+                <h3 className="feature-title">Switch between models</h3>
+                <p className="feature-desc">Switch between different LLMs with one click. Each model remembers your context.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }

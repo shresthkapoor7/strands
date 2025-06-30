@@ -1,60 +1,40 @@
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Sidebar from './components/Sidebar';
-import MainContent from './components/MainContent';
+import { customAlphabet } from 'nanoid';
 import './App.css';
-import { useEffect, useState } from 'react';
-import Threads from './pages/ThreadsPage/ThreadsPage';
+import { useEffect } from 'react';
+import ThreadsPage from './pages/ThreadsPage/ThreadsPage';
+import SettingsPage from './pages/SettingsPage/SettingsPage';
+import MainContent from './components/MainContent';
 import ChatPage from './pages/ChatPage/ChatPage';
-import Settings from './pages/SettingsPage/SettingsPage';
+
+const NoChatSelected = () => (
+  <div className="no-chat-selected">
+    <h2>Select a chat or start a new one</h2>
+    <p>Your conversations will appear here.</p>
+  </div>
+);
 
 function App() {
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
-
   useEffect(() => {
-    const storedTheme = localStorage.getItem('theme');
-    const isDark = storedTheme === 'dark';
-    setDarkMode(isDark);
-    document.body.classList.toggle('dark', isDark);
+    let deviceId = localStorage.getItem("deviceId");
+    if (!deviceId) {
+      deviceId = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 20)();
+      localStorage.setItem("deviceId", deviceId);
+    }
   }, []);
-
-  const toggleSidebar = () => {
-    setSidebarOpen(!isSidebarOpen);
-  };
-
-  // Function to pass to Settings
-  const toggleDarkMode = () => {
-    const newMode = !darkMode;
-    setDarkMode(newMode);
-    document.body.classList.toggle('dark', newMode);
-    localStorage.setItem('theme', newMode ? 'dark' : 'light');
-  };
 
   return (
     <Router>
-      <div className="app">
-        <div className="mobile-topbar">
-          <button className="hamburger" onClick={toggleSidebar}>
-            ☰
-          </button>
-          <div className="mobile-title">Strands</div>
-        </div>
-
-        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-
-        <Routes>
-          <Route path="/" element={<Navigate to="/home" replace />} />
-          <Route path="/home" element={<MainContent />} />
-          <Route path="/threads" element={<Threads />} />
-          <Route path="/settings" element={
-            <Settings
-              darkMode={darkMode}
-              toggleDarkMode={toggleDarkMode}
-            />
-          } />
-          <Route path="/chat/:chatId" element={<ChatPage />} />
-        </Routes>
-      </div>
+      <Routes>
+        <Route path="/" element={<Navigate to="/home" replace />} />
+        <Route path="/home" element={<MainContent />} />
+        <Route path="/chat" element={<ThreadsPage />}>
+          <Route index element={<NoChatSelected />} />
+          <Route path=":chatId" element={<ChatPage />} />
+        </Route>
+        <Route path="/settings" element={<SettingsPage />} />
+      </Routes>
     </Router>
   );
 }

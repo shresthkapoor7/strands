@@ -1,11 +1,9 @@
 import { useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import Message from "../../models/Message";
-import { useCallback } from 'react';
 import "./ChatPage.css";
 import { sendMessageToGemini } from "../../api/gemini";
-import { useRef } from 'react';
 import { sendMessageStream } from "../../api/chat";
 
 const MAX_CONTEXT_SIZE_MAIN_CHAT = parseInt(localStorage.getItem('mainChatQueueSize')) || 10;
@@ -69,22 +67,31 @@ function ChatPage() {
   };
 
   useEffect(() => {
+    if (!chatId) return;
+
+    setMessages([]);
+    setChatTitle(null);
+    setIsLoading(true);
+
     const loadMessages = async () => {
       const fetched = await fetchChatMessages(chatId);
       const parsedMessages = fetched.map(msg => new Message(msg));
       const mainMessages = parsedMessages.filter(msg => !msg.strand);
+
       setMessages(mainMessages);
       setMessageStore(parsedMessages);
 
       if (parsedMessages.length > 0) {
         setChatTitle(parsedMessages[0].chatTitle);
+      } else {
+        setChatTitle(shortId);
       }
 
       const lastTenMain = mainMessages.slice(-10);
       setContextQueue(lastTenMain);
     };
 
-    loadMessages();
+    loadMessages().finally(() => setIsLoading(false));
   }, [chatId]);
 
   const resizeMainTextarea = () => {
@@ -251,6 +258,7 @@ function ChatPage() {
             }
           }
         );
+        assistantMessage.text = accumulatedText;
       }
 
       updateContextQueue(assistantMessage);
@@ -379,6 +387,7 @@ function ChatPage() {
             }
           }
         );
+        assistantReply.text = accumulatedText;
       }
       else {
         await sendMessageStream({
@@ -447,6 +456,7 @@ function ChatPage() {
   };
 
   const saveMessagesToSupabase = async (allMessages) => {
+    console.log(allMessages);
     try {
       const res = await fetch('https://api.strandschat.com/api/save-chat', {
         method: 'POST',
@@ -512,7 +522,7 @@ function ChatPage() {
                 if (success) {
                   setMessageStore([]);
                   alert("Chat saved successfully");
-                  window.location.reload();
+                  // window.location.reload();
                 } else {
                   alert("Failed to save chat");
                 }
@@ -522,20 +532,11 @@ function ChatPage() {
         </div>
 
         <div className="chat-body">
-          <div className="chat-messages">
-            {messages.length === 0 ? (
-              <p className="chat-placeholder">
-                Your conversation starts here 🚀
-              </p>
-            ) : (
-              <>
-                {messages.map((msg, idx) => (
-                  <div
-                    key={msg.id}
-                    className={`chat-bubble ${msg.sentBy === 0 ? "user" : "assistant"
-                      }`}
-                  >
-                    <ReactMarkdown
+          {messages.length !== 0 ? (
+            <div className="chat-messages">
+              {messages.map((msg, idx) => (
+                <div key={msg.id} className={`chat-bubble ${msg.sentBy === 0 ? "user" : "assistant"}`}>
+                  <ReactMarkdown
                       components={{
                         code({ node, inline, className, children, ...props }) {
                           return !inline ? (
@@ -560,34 +561,42 @@ function ChatPage() {
                     >
                       {msg.text}
                     </ReactMarkdown>
-
-                    {/* Strand Off Button */}
-                    {msg.sentBy === 1 && (
-                      <div className="strand-off">
-                        <button
-                          className="strand-button"
-                          onClick={() => startThread(msg)}
-                        >
-                          🧵 Start a strand
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-                {isLoading && (
-                  <div className="loading-bubble">
-                    <div className="loading-dots">
-                      <div className="loading-dot"></div>
-                      <div className="loading-dot"></div>
-                      <div className="loading-dot"></div>
+                  {/* Strand Off Button */}
+                  {msg.sentBy === 1 && (
+                    <div className="strand-off">
+                      <button
+                        className="strand-button"
+                        onClick={() => startThread(msg)}
+                      >
+                        🧵 Start a strand
+                      </button>
                     </div>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            !isLoading && (
+              <div className="chat-placeholder-container">
+                  Your conversation starts here 🚀
+              </div>
+            )
+          )}
+          {isLoading && (
+            <div className="loading-container">
+              <div className="loading-bubble">
+                <div className="loading-dots">
+                  <div className="loading-dot"></div>
+                  <div className="loading-dot"></div>
+                  <div className="loading-dot"></div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
 
-          <div className="chat-input-area">
+        <div className="chat-input-area">
+          <div className="input-wrapper">
             <textarea
               ref={textareaRef}
               className="chat-textarea"
@@ -607,13 +616,6 @@ function ChatPage() {
             >
               <span className="arrow-icon">↑</span>
             </button>
-            {/* <button
-              hidden={true}
-              className={`browser-icon-button ${browserSearchEnabled ? 'enabled' : 'disabled'}`}
-              onClick={() => setBrowserSearchEnabled(prev => !prev)}
-            >
-              🌐
-            </button> */}
           </div>
         </div>
       </div>
@@ -690,7 +692,7 @@ function ChatPage() {
             <div className="chat-input-area">
               <textarea
                 ref={threadTextareaRef}
-                className="chat-textarea"
+                className="textarea chat-textarea"
                 placeholder="Reply in thread..."
                 value={activeThread.input}
                 onChange={(e) => {
