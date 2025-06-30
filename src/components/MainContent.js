@@ -51,7 +51,7 @@ function MainContent() {
 
       {isMobileMenuOpen && (
         <div className="mobile-nav-menu">
-          <a onClick={() => closeMenuAndNavigate('/threads')} className="landing-nav-link">Chats</a>
+          <a onClick={() => closeMenuAndNavigate('/chat')} className="landing-nav-link">Chats</a>
           <a onClick={() => closeMenuAndNavigate('/settings')} className="landing-nav-link">Settings</a>
           <button className="landing-get-started" onClick={() => {
             setIsMobileMenuOpen(false);
