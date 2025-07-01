@@ -202,6 +202,30 @@ body {
   padding-top: 100px;
 }
 
+.no-chat-selected p {
+  color: var(--secondary-text);
+  font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+  .app-container:not(.sidebar-collapsed) .no-chat-selected {
+    display: none;
+  }
+
+  .no-chat-selected {
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .no-chat-selected h2 {
+    font-size: 1.5rem;
+  }
+
+  .no-chat-selected p {
+    font-size: 1rem;
+  }
+}
+
 @media (max-width: 900px) {
   .landing-nav {
     display: none;

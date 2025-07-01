@@ -1,6 +1,9 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect, useRef, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import Message from "../../models/Message";
 import "./ChatPage.css";
 import { sendMessageToGemini } from "../../api/gemini";
@@ -481,11 +484,42 @@ function ChatPage() {
     }
   };
 
+  const CodeBlock = ({ node, inline, className, children, ...props }) => {
+    const [isCopied, setIsCopied] = useState(false);
+    const match = /language-(\w+)/.exec(className || '');
+    const lang = match ? match[1] : '';
+
+    const handleCopy = () => {
+      navigator.clipboard.writeText(String(children).replace(/\n$/, '')).then(() => {
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+      });
+    };
+
+    return !inline && match ? (
+      <div className="code-block-container">
+        <div className="code-block-header">
+          <span>{lang}</span>
+          <button onClick={handleCopy} className="copy-button">
+            {isCopied ? 'Copied!' : 'Copy'}
+          </button>
+        </div>
+        <SyntaxHighlighter style={atomDark} language={lang} PreTag="div" customStyle={{ margin: 0 }} {...props}>
+          {String(children).replace(/\n$/, '')}
+        </SyntaxHighlighter>
+      </div>
+    ) : (
+      <code className={className} {...props}>
+        {children}
+      </code>
+    );
+  };
+
   return (
     <div className={`chat-container ${activeThread ? "drawer-open" : ""}`}>
       <div className="main-chat">
         <div className="chat-header">
-          <div className="chat-title-row">
+          <div className="chat-title-row" style={modelDropdownOpen ? { overflow: 'visible' } : {}}>
             <h1 className="chat-title">
               {chatTitle} <span className="chat-id">#{shortId}</span>
             </h1>
@@ -536,31 +570,11 @@ function ChatPage() {
             <div className="chat-messages">
               {messages.map((msg, idx) => (
                 <div key={msg.id} className={`chat-bubble ${msg.sentBy === 0 ? "user" : "assistant"}`}>
-                  <ReactMarkdown
-                      components={{
-                        code({ node, inline, className, children, ...props }) {
-                          return !inline ? (
-                            <div className="code-block-container">
-                              <pre>
-                                <code className={className} {...props}>
-                                  {children}
-                                </code>
-                              </pre>
-                              <button
-                                className="copy-button"
-                                onClick={() => navigator.clipboard.writeText(children)}
-                              >
-                                Copy
-                              </button>
-                            </div>
-                          ) : (
-                            <code className={className} {...props}>{children}</code>
-                          );
-                        }
-                      }}
-                    >
+                  <div className="markdown-content">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ code: CodeBlock }}>
                       {msg.text}
                     </ReactMarkdown>
+                  </div>
                   {/* Strand Off Button */}
                   {msg.sentBy === 1 && (
                     <div className="strand-off">
@@ -639,7 +653,11 @@ function ChatPage() {
 
             <div className="thread-replies">
               <div className="thread-bubble assistant">
-                <ReactMarkdown>{truncateText(activeThread.parent.text, 1)}</ReactMarkdown>
+                <div className="markdown-content">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ code: CodeBlock }}>
+                    {truncateText(activeThread.parent.text, 1)}
+                  </ReactMarkdown>
+                </div>
                 <div className="parent-message-more">
                   <span className="message-count">
                     {activeThread.parent.text.split(/(?<=[.!?])\s+/).length} sentences
@@ -651,31 +669,11 @@ function ChatPage() {
                   key={reply.id}
                   className={`thread-bubble ${reply.sentBy === 0 ? 'user' : 'assistant'}`}
                 >
-                  <ReactMarkdown
-                    components={{
-                      code({ node, inline, className, children, ...props }) {
-                        return !inline ? (
-                          <div className="code-block-container">
-                            <pre>
-                              <code className={className} {...props}>
-                                {children}
-                              </code>
-                            </pre>
-                            <button
-                              className="copy-button"
-                              onClick={() => navigator.clipboard.writeText(children)}
-                            >
-                              Copy
-                            </button>
-                          </div>
-                        ) : (
-                          <code className={className} {...props}>{children}</code>
-                        );
-                      }
-                    }}
-                  >
-                    {reply.text}
-                  </ReactMarkdown>
+                  <div className="markdown-content">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ code: CodeBlock }}>
+                      {reply.text}
+                    </ReactMarkdown>
+                  </div>
                 </div>
               ))}
               {isThreadLoading && (

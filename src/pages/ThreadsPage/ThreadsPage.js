@@ -3,13 +3,12 @@ import { useNavigate, Outlet, useParams } from 'react-router-dom';
 import './ThreadsPage.css';
 import { customAlphabet } from 'nanoid';
 
-function ThreadsPage() {
+function ThreadsPage({ isSidebarCollapsed, toggleSidebar }) {
   const navigate = useNavigate();
   const { chatId } = useParams();
   const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 10);
 
   const [threads, setThreads] = useState([]);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     const fetchThreads = async () => {
@@ -35,10 +34,6 @@ function ThreadsPage() {
   const handleCreateNewChat = () => {
     const newChatId = nanoid();
     navigate(`/chat/${newChatId}`);
-  };
-
-  const toggleSidebar = () => {
-    setIsSidebarCollapsed(!isSidebarCollapsed);
   };
 
   return (
@@ -67,7 +62,7 @@ function ThreadsPage() {
             ))}
           </ul>
         </div>
-        <div className="sidebar-footer">
+        <div className={`sidebar-footer ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
             <button className="sidebar-nav-btn" onClick={() => navigate('/home')}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                 <span className="sidebar-nav-text">Home</span>

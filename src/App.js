@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { customAlphabet } from 'nanoid';
 import './App.css';
@@ -7,6 +7,7 @@ import ThreadsPage from './pages/ThreadsPage/ThreadsPage';
 import SettingsPage from './pages/SettingsPage/SettingsPage';
 import MainContent from './components/MainContent';
 import ChatPage from './pages/ChatPage/ChatPage';
+import ChangelogsPage from './pages/ChangelogsPage/ChangelogsPage';
 
 const NoChatSelected = () => (
   <div className="no-chat-selected">
@@ -16,6 +17,8 @@ const NoChatSelected = () => (
 );
 
 function App() {
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
   useEffect(() => {
     let deviceId = localStorage.getItem("deviceId");
     if (!deviceId) {
@@ -24,17 +27,25 @@ function App() {
     }
   }, []);
 
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
+  };
+
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Navigate to="/home" replace />} />
-        <Route path="/home" element={<MainContent />} />
-        <Route path="/chat" element={<ThreadsPage />}>
-          <Route index element={<NoChatSelected />} />
-          <Route path=":chatId" element={<ChatPage />} />
-        </Route>
-        <Route path="/settings" element={<SettingsPage />} />
-      </Routes>
+      <div className={`app-container ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+        <Routes>
+          <Route path="/" element={<Navigate to="/home" replace />} />
+          <Route path="/home" element={<MainContent />} />
+          <Route path="/chat" element={<ThreadsPage toggleSidebar={toggleSidebar} isSidebarCollapsed={isSidebarCollapsed} />}>
+            <Route index element={<NoChatSelected show={isSidebarCollapsed} />} />
+            <Route path=":chatId" element={<ChatPage />} />
+          </Route>
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/changelogs" element={<ChangelogsPage />} />
+          <Route path="/changelogs/:id" element={<ChangelogsPage />} />
+        </Routes>
+      </div>
     </Router>
   );
 }

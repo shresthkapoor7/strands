@@ -35,6 +35,7 @@ function MainContent() {
         <div className="landing-logo">Strands</div>
         <div className="landing-nav">
           <a href="/chat" className="landing-nav-link">Chats</a>
+          <a href="/changelogs" className="landing-nav-link">Changelogs</a>
           <a href="/settings" className="landing-nav-link">Settings</a>
           <button className="landing-get-started" onClick={handleStartChat}>
             Start a new Chat
@@ -52,6 +53,7 @@ function MainContent() {
       {isMobileMenuOpen && (
         <div className="mobile-nav-menu">
           <a onClick={() => closeMenuAndNavigate('/chat')} className="landing-nav-link">Chats</a>
+          <a onClick={() => closeMenuAndNavigate('/changelogs')} className="landing-nav-link">Changelogs</a>
           <a onClick={() => closeMenuAndNavigate('/settings')} className="landing-nav-link">Settings</a>
           <button className="landing-get-started" onClick={() => {
             setIsMobileMenuOpen(false);

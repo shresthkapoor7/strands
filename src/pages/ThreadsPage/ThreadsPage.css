@@ -240,3 +240,22 @@
   .threads-page-container.sidebar-collapsed .sidebar-nav-btn svg {
     margin-right: 0;
   }
+
+/* Custom Scrollbar for Sidebar */
+.sidebar-content::-webkit-scrollbar {
+  width: 12px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 6px;
+  border: 3px solid #121212;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+  background-color: #4a5568;
+}
