@@ -10,7 +10,7 @@ const posts = [
     id: 1,
     title: 'Why I switched from GitHub Pages to Vercel',
     url: 'https://raw.githubusercontent.com/shresthkapoor7/portfolio/main/public/blogs/1.md',
-    date: 'July 26, 2024'
+    date: 'June 21, 2025'
   },
 ];
 
