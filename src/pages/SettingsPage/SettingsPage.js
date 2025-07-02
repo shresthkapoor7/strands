@@ -1,74 +1,74 @@
-import { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import './SettingsPage.css';
 
-function Settings({ darkMode, toggleDarkMode }) {
-  const [mainChatQueue, setMainChatQueue] = useState(10);
-  const [threadChatQueue, setThreadChatQueue] = useState(5);
-
-  useEffect(() => {
+function SettingsPage() {
+  const [mainChatQueueSize, setMainChatQueueSize] = useState(() => {
     const savedMain = parseInt(localStorage.getItem('mainChatQueueSize')) || 10;
-    const savedThread = parseInt(localStorage.getItem('threadChatQueueSize')) || 5;
-    setMainChatQueue(savedMain);
-    setThreadChatQueue(savedThread);
+    return savedMain;
   }, []);
 
-  const handleMainQueueChange = (e) => {
-    const val = parseInt(e.target.value);
-    setMainChatQueue(val);
-    localStorage.setItem('mainChatQueueSize', val);
-  };
+  const [threadChatQueueSize, setThreadChatQueueSize] = useState(() => {
+    const savedThread = parseInt(localStorage.getItem('threadChatQueueSize')) || 5;
+    return savedThread;
+  }, []);
 
-  const handleThreadQueueChange = (e) => {
-    const val = parseInt(e.target.value);
-    setThreadChatQueue(val);
-    localStorage.setItem('threadChatQueueSize', val);
+  const handleSaveSettings = () => {
+    localStorage.setItem('mainChatQueueSize', mainChatQueueSize);
+    localStorage.setItem('threadChatQueueSize', threadChatQueueSize);
+    alert('Settings saved!');
   };
 
   return (
-    <div className="main-content-settings">
-      <h1>Settings</h1>
+    <div className="settings-container">
+      <div className="settings-content">
+        <Link to="/home" className="back-to-home-link">&larr; Back to Home</Link>
+        <h1 className="settings-title">Settings</h1>
 
-      <button
-        id="darkModeToggle"
-        className="fancy-button"
-        onClick={toggleDarkMode}
-      >
-        {darkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
-      </button>
-
-      <div className="queue-settings">
-        <div className="queue-block">
-          <label>🧠 Main Chat Context Queue Size</label>
-          <input
-            type="number"
-            min="1"
-            max="50"
-            value={mainChatQueue}
-            onChange={handleMainQueueChange}
-            className="styled-input"
-          />
-          <p className="queue-description">
+        <div className="setting-card">
+          <h2 className="setting-title">
+            <span role="img" aria-label="brain">🧠</span> Main Chat Context Queue Size
+          </h2>
+          <p className="setting-description">
             Determines how many recent messages are sent with each request in the main chat. Higher values give better context, but may slow responses slightly.
           </p>
+          <div className="slider-container">
+            <input
+              type="range"
+              min="1"
+              max="50"
+              className="slider"
+              value={mainChatQueueSize}
+              onChange={(e) => setMainChatQueueSize(e.target.value)}
+            />
+            <span className="slider-value">{mainChatQueueSize}</span>
+          </div>
         </div>
 
-        <div className="queue-block">
-          <label>🧵 Thread Chat Context Queue Size</label>
-          <input
-            type="number"
-            min="1"
-            max="20"
-            value={threadChatQueue}
-            onChange={handleThreadQueueChange}
-            className="styled-input"
-          />
-          <p className="queue-description">
+        <div className="setting-card">
+          <h2 className="setting-title">
+            <span role="img" aria-label="thread">🧵</span> Thread Chat Context Queue Size
+          </h2>
+          <p className="setting-description">
             Sets how much of the thread's history is passed to the AI. Useful for long sub-conversations without overwhelming the model.
           </p>
+          <div className="slider-container">
+            <input
+              type="range"
+              min="1"
+              max="20"
+              className="slider"
+              value={threadChatQueueSize}
+              onChange={(e) => setThreadChatQueueSize(e.target.value)}
+            />
+            <span className="slider-value">{threadChatQueueSize}</span>
+          </div>
         </div>
+
+        <button className="save-settings-btn" onClick={handleSaveSettings}>Save Settings</button>
       </div>
     </div>
   );
 }
 
-export default Settings;
+export default SettingsPage;

@@ -28,12 +28,13 @@ function ChatPage() {
   const [isThreadLoading, setIsThreadLoading] = useState(false);
   const [messageStore, setMessageStore] = useState([]);
   const [browserSearchEnabled, setBrowserSearchEnabled] = useState(false);
-  const [llm, setLlm] = useState("maverick");
+  const [llm, setLlm] = useState("gemini");
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
   const modelDropdownRef = useRef(null);
+  const [isContextModalOpen, setIsContextModalOpen] = useState(false);
 
   const models = [
-    { name: "maverick", icon: "Ⓜ️", modelFull: "meta-llama/llama-4-maverick:free"},
+    // { name: "maverick", icon: "Ⓜ️", modelFull: "meta-llama/llama-4-maverick:free"},
     { name: "gemma", icon: "🐵", modelFull: "google/gemma-3n-e4b-it:free"},
     { name: "mistral", icon: "🐯", modelFull: "mistralai/mistral-7b-instruct:free"},
     { name: "deepseek", icon: "🐶", modelFull: "deepseek/deepseek-r1-0528:free"},
@@ -484,6 +485,35 @@ function ChatPage() {
     }
   };
 
+  const handleAddMessageToMainQueue = (messageToAdd) => {
+    setContextQueue(prevQueue => {
+      if (prevQueue.some(msg => msg.id === messageToAdd.id)) return prevQueue;
+      const updatedQueue = [...prevQueue, messageToAdd].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      return updatedQueue.length > MAX_CONTEXT_SIZE_MAIN_CHAT
+        ? updatedQueue.slice(updatedQueue.length - MAX_CONTEXT_SIZE_MAIN_CHAT)
+        : updatedQueue;
+    });
+  };
+
+  const handleAddMessageToThreadQueue = (messageToAdd) => {
+    if (!activeThread) return;
+    setThreadContextQueue(prevQueue => {
+      if (prevQueue.some(msg => msg.id === messageToAdd.id)) return prevQueue;
+      const updatedQueue = [...prevQueue, messageToAdd].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      return updatedQueue.length > MAX_CONTEXT_SIZE_THREAD_CHAT
+        ? updatedQueue.slice(updatedQueue.length - MAX_CONTEXT_SIZE_THREAD_CHAT)
+        : updatedQueue;
+    });
+  };
+
+  const handleDeleteFromQueue = (queueType, index) => {
+    if (queueType === 'main') {
+      setContextQueue(prev => prev.filter((_, i) => i !== index));
+    } else if (queueType === 'thread') {
+      setThreadContextQueue(prev => prev.filter((_, i) => i !== index));
+    }
+  };
+
   const CodeBlock = ({ node, inline, className, children, ...props }) => {
     const [isCopied, setIsCopied] = useState(false);
     const match = /language-(\w+)/.exec(className || '');
@@ -515,6 +545,126 @@ function ChatPage() {
     );
   };
 
+  const ContextModal = ({ isOpen, onClose, mainQueue, threadQueue, activeThread, allMessages, onDelete, onAddToMain, onAddToThread }) => {
+    const [activeTab, setActiveTab] = useState('main');
+    const [expandedMessages, setExpandedMessages] = useState({});
+
+    useEffect(() => {
+      if (!activeThread) {
+        setActiveTab('main');
+      }
+    }, [activeThread]);
+
+    // Reset expanded state when modal is closed
+    useEffect(() => {
+      if (!isOpen) {
+        setExpandedMessages({});
+      }
+    }, [isOpen]);
+
+    const toggleExpand = (id) => {
+      setExpandedMessages(prev => ({
+        ...prev,
+        [id]: !prev[id]
+      }));
+    };
+
+    const renderMessages = (queue, tabName, isQueue) => {
+      return queue.map((msg, index) => {
+        const id = `${tabName}-${index}`;
+        const isExpanded = expandedMessages[id];
+        const TRUNCATE_LENGTH = 150;
+        const isLong = msg.text.length > TRUNCATE_LENGTH;
+        const textToShow = isExpanded || !isLong ? msg.text : `${msg.text.substring(0, TRUNCATE_LENGTH)}...`;
+
+        const handleDelete = (e) => {
+          e.stopPropagation();
+          onDelete(tabName, index);
+        };
+
+        const handleAddToMain = (e) => {
+          e.stopPropagation();
+          onAddToMain(msg);
+        };
+
+        const handleAddToThread = (e) => {
+          e.stopPropagation();
+          onAddToThread(msg);
+        };
+
+        return (
+          <div
+            key={id}
+            className={`queue-message ${msg.sentBy === 0 ? 'user' : 'assistant'} ${isLong ? 'expandable' : ''}`}
+            onClick={() => isLong && toggleExpand(id)}
+          >
+            <div className="markdown-content">
+              <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ code: CodeBlock }}>
+                {textToShow}
+              </ReactMarkdown>
+            </div>
+            {isQueue ? (
+              <button className="queue-message-delete-btn" onClick={handleDelete}>×</button>
+            ) : (
+              <div className="queue-message-actions">
+                <button className="queue-action-btn" onClick={handleAddToMain}>+ Main</button>
+                {activeThread && (
+                  <button className="queue-action-btn" onClick={handleAddToThread}>+ Thread</button>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      });
+    };
+
+    if (!isOpen) return null;
+
+    return (
+      <div className="modal-overlay" onClick={onClose}>
+        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <button onClick={onClose} className="modal-close-button">×</button>
+          <h2>Context Queues</h2>
+          <div className="modal-tabs">
+            <button className={`modal-tab ${activeTab === 'main' ? 'active' : ''}`} onClick={() => setActiveTab('main')}>
+              Main ({mainQueue.length}/{MAX_CONTEXT_SIZE_MAIN_CHAT})
+            </button>
+            {activeThread && (
+              <button className={`modal-tab ${activeTab === 'thread' ? 'active' : ''}`} onClick={() => setActiveTab('thread')}>
+                Thread ({threadQueue.length}/{MAX_CONTEXT_SIZE_THREAD_CHAT})
+              </button>
+            )}
+            <button className={`modal-tab ${activeTab === 'all' ? 'active' : ''}`} onClick={() => setActiveTab('all')}>
+              All ({allMessages.length})
+            </button>
+          </div>
+
+          {activeTab === 'main' && (
+            <div className="queue-section">
+              <div className="queue-messages">
+                {renderMessages(mainQueue, 'main', true)}
+              </div>
+            </div>
+          )}
+          {activeTab === 'thread' && activeThread && (
+            <div className="queue-section">
+              <div className="queue-messages">
+                {renderMessages(threadQueue, 'thread', true)}
+              </div>
+            </div>
+          )}
+          {activeTab === 'all' && (
+            <div className="queue-section">
+              <div className="queue-messages">
+                {renderMessages(allMessages, 'all', false)}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className={`chat-container ${activeThread ? "drawer-open" : ""}`}>
       <div className="main-chat">
@@ -528,7 +678,7 @@ function ChatPage() {
                 className="model-dropdown-btn"
                 onClick={() => setModelDropdownOpen((open) => !open)}
               >
-                {models.find((m) => m.name === llm)?.icon} {models.find((m) => m.name === llm)?.modelFull}
+                {models.find((m) => m.name === llm)?.icon} {models.find((m) => m.name === llm)?.name}
                 <span style={{ marginLeft: 6 }}>▼</span>
               </button>
               {modelDropdownOpen && (
@@ -550,18 +700,21 @@ function ChatPage() {
                 </div>
               )}
             </div>
-            <a className="save-chat-button"
+            <a className="view-context-button"
               onClick={async () => {
                 const success = await saveMessagesToSupabase(messageStore);
                 if (success) {
                   setMessageStore([]);
                   alert("Chat saved successfully");
-                  // window.location.reload();
+                  window.location.reload();
                 } else {
                   alert("Failed to save chat");
                 }
               }}
             >Save Chat</a>
+            <button className="view-context-button" onClick={() => setIsContextModalOpen(true)}>
+              View Context
+            </button>
           </div>
         </div>
 
@@ -635,62 +788,65 @@ function ChatPage() {
       </div>
 
       {activeThread && (
-        <>
-          <div
-            className="resize-handle"
-            onMouseDown={handleResizeStart}
-          />
-          <div className="thread-panel" style={{ width: `${threadWidth}px` }}>
-            <div className="thread-header">
-              <button
-                className="close-thread"
-                onClick={() => setActiveThread(null)}
-              >
-                ✖️
-              </button>
-              <h2>Strand 🧵</h2>
-            </div>
+        <div
+          className="resize-handle"
+          onMouseDown={handleResizeStart}
+        />
+      )}
 
-            <div className="thread-replies">
-              <div className="thread-bubble assistant">
+      {activeThread && (
+        <div className="thread-panel" style={{ width: `${threadWidth}px` }}>
+          <div className="thread-header">
+            <button
+              className="close-thread"
+              onClick={() => setActiveThread(null)}
+            >
+              ✖️
+            </button>
+            <h2>Strand 🧵</h2>
+          </div>
+
+          <div className="thread-replies">
+            <div className="chat-bubble assistant">
+              <div className="markdown-content">
+                <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ code: CodeBlock }}>
+                  {truncateText(activeThread.parent.text, 1)}
+                </ReactMarkdown>
+              </div>
+              <div className="parent-message-more">
+                <span className="message-count">
+                  {activeThread.parent.text.split(/(?<=[.!?])\s+/).length} sentences
+                </span>
+              </div>
+            </div>
+            {activeThread.replies.map((reply) => (
+              <div
+                key={reply.id}
+                className={`chat-bubble ${reply.sentBy === 0 ? 'user' : 'assistant'}`}
+              >
                 <div className="markdown-content">
                   <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ code: CodeBlock }}>
-                    {truncateText(activeThread.parent.text, 1)}
+                    {reply.text}
                   </ReactMarkdown>
                 </div>
-                <div className="parent-message-more">
-                  <span className="message-count">
-                    {activeThread.parent.text.split(/(?<=[.!?])\s+/).length} sentences
-                  </span>
+              </div>
+            ))}
+            {isThreadLoading && (
+              <div className="loading-bubble">
+                <div className="loading-dots">
+                  <div className="loading-dot"></div>
+                  <div className="loading-dot"></div>
+                  <div className="loading-dot"></div>
                 </div>
               </div>
-              {activeThread.replies.map((reply) => (
-                <div
-                  key={reply.id}
-                  className={`thread-bubble ${reply.sentBy === 0 ? 'user' : 'assistant'}`}
-                >
-                  <div className="markdown-content">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ code: CodeBlock }}>
-                      {reply.text}
-                    </ReactMarkdown>
-                  </div>
-                </div>
-              ))}
-              {isThreadLoading && (
-                <div className="loading-bubble">
-                  <div className="loading-dots">
-                    <div className="loading-dot"></div>
-                    <div className="loading-dot"></div>
-                    <div className="loading-dot"></div>
-                  </div>
-                </div>
-              )}
-            </div>
+            )}
+          </div>
 
-            <div className="chat-input-area">
+          <div className="chat-input-area">
+            <div className="input-wrapper">
               <textarea
                 ref={threadTextareaRef}
-                className="textarea chat-textarea"
+                className="chat-textarea"
                 placeholder="Reply in thread..."
                 value={activeThread.input}
                 onChange={(e) => {
@@ -700,19 +856,29 @@ function ChatPage() {
                 onKeyDown={handleThreadKeyDown}
                 disabled={isThreadLoading}
               />
-              {activeThread.input.trim() !== "" && (
-                <button
-                  className="send-icon-button"
-                  onClick={handleThreadSend}
-                  disabled={isThreadLoading}
-                >
-                  <span className="arrow-icon">↑</span>
-                </button>
-              )}
+              <button
+                className="send-icon-button"
+                onClick={handleThreadSend}
+                disabled={activeThread.input.trim() === "" || isThreadLoading}
+              >
+                <span className="arrow-icon">↑</span>
+              </button>
             </div>
           </div>
-        </>
+        </div>
       )}
+
+      <ContextModal
+        isOpen={isContextModalOpen}
+        onClose={() => setIsContextModalOpen(false)}
+        mainQueue={contextQueue}
+        threadQueue={threadContextQueue}
+        activeThread={activeThread}
+        allMessages={messageStore}
+        onDelete={handleDeleteFromQueue}
+        onAddToMain={handleAddMessageToMainQueue}
+        onAddToThread={handleAddMessageToThreadQueue}
+      />
     </div>
   );
 }
