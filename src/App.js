@@ -8,6 +8,7 @@ import SettingsPage from './pages/SettingsPage/SettingsPage';
 import MainContent from './components/MainContent';
 import ChatPage from './pages/ChatPage/ChatPage';
 import ChangelogsPage from './pages/ChangelogsPage/ChangelogsPage';
+import LoginPage from './pages/LoginPage/LoginPage';
 
 const NoChatSelected = () => (
   <div className="no-chat-selected">
@@ -37,6 +38,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="/home" element={<MainContent />} />
+          <Route path="/login" element={<LoginPage />} />
           <Route path="/chat" element={<ThreadsPage toggleSidebar={toggleSidebar} isSidebarCollapsed={isSidebarCollapsed} />}>
             <Route index element={<NoChatSelected show={isSidebarCollapsed} />} />
             <Route path=":chatId" element={<ChatPage />} />
