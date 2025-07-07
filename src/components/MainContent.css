@@ -1,8 +1,19 @@
+.landing-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-main {
+  flex-grow: 1;
+}
+
 .landing-footer {
   text-align: center;
   padding: 1rem 0;
   font-size: 0.875rem;
   color: #a0aec0;
+  width: 100%;
 }
 
 .landing-footer a {
@@ -124,7 +135,7 @@
 }
 
 .email-signup-section {
-  padding: 5rem 2rem;
+  padding: 1rem 2rem;
   text-align: center;
   opacity: 0;
   transform: translateY(50px);
@@ -208,24 +219,32 @@
 }
 
 .scroll-down-container {
-  height: 30px;
+  height: 60px;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 1;
-  transition: opacity 0.5s ease-out;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
 }
 
+.landing-root.loaded .scroll-down-container {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 2s;
+}
 
-.scroll-down-container.hidden {
-  opacity: 0;
-  pointer-events: none;
+.scroll-down-container.hidden, .landing-footer.hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 0.3s ease-out;
+  transition-delay: 0s !important;
 }
 
 .scroll-down-arrow {
   position: absolute;
-  bottom: 10px;
+  bottom: 5px;
   left: 50%;
   transform: translateX(-50%);
   font-size: 2.5rem;
@@ -239,7 +258,7 @@
     transform: translateX(-50%) translateY(0);
   }
   50% {
-    transform: translateX(-50%) translateY(18px);
+    transform: translateX(-50%) translateY(10px);
   }
 }
 
@@ -258,4 +277,16 @@
   color: #000000;
   cursor: pointer;
   transition: opacity 0.2s;
+}
+
+.initial-footer {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+.landing-root.loaded .initial-footer {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 2s;
 }

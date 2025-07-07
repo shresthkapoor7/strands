@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { customAlphabet } from 'nanoid';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './MainContent.css';
 import ProblemDiagram from './ProblemDiagram';
 import SolutionDiagram from './SolutionDiagram';
@@ -11,6 +11,14 @@ function MainContent() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isContentLoaded, setIsContentLoaded] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
+  const emailRef = useRef();
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const userEmail = emailRef.current.value;
+    if (!userEmail) return;
+    window.location.href = `https://shresthkapoor7.substack.com/subscribe?email=${encodeURIComponent(userEmail)}`;
+  };
 
   useEffect(() => {
     window.scrollTo(-1000, -1000);
@@ -156,17 +164,16 @@ function MainContent() {
             </div>
           </div>
         </div>
-        <div style={{ height: '100px' }}></div>
-        <footer className={`landing-footer ${hasScrolled ? 'hidden' : ''}`}>
-        <p>
-          Made by Shresth Kapoor. View codebase on <a href="https://github.com/shresthkapoor7/strands" target="_blank" rel="noopener noreferrer">GitHub</a>.
-        </p>
-      </footer>
         <div className={`scroll-down-container ${hasScrolled ? 'hidden' : ''}`}>
           <span className="scroll-down-arrow" aria-label="Scroll down">
             ↓
           </span>
         </div>
+        <footer className={`landing-footer initial-footer ${hasScrolled ? 'hidden' : ''}`}>
+        <p style={{ color: 'grey', fontSize: '10px', marginTop: '0px' }}>
+          Made by Shresth Kapoor. View codebase on <a href="https://github.com/shresthkapoor7/strands" target="_blank" rel="noopener noreferrer">GitHub</a>.
+        </p>
+      </footer>
         <div className="scroll-features-container">
           <div className="scroll-feature problem-section">
             <div className="problem-image-container">
@@ -196,14 +203,20 @@ Start a new conversation - and lose all the valuable context you've built - or k
         </div>
       </main>
 
-      {/* <section className="email-signup-section">
-        <h2 className="signup-title">Stay in the loop</h2>
-        <p className="signup-description">Sign up for updates on new features and models.</p>
-        <form className="email-signup-form" onSubmit={(e) => e.preventDefault()}>
-          <input type="email" placeholder="your@email.com" className="email-input"/>
-          <button type="submit" className="signup-button">Sign Up</button>
-        </form>
-      </section> */}
+      <section className="email-signup-section">
+      <h2 className="signup-title">Stay in the loop</h2>
+      <p className="signup-description">Sign up for updates on new features and models.</p>
+      <form className="email-signup-form" onSubmit={handleSubmit}>
+        <input
+          type="email"
+          placeholder="your@email.com"
+          className="email-input"
+          ref={emailRef}
+          required
+        />
+        <button type="submit" className="signup-button">Sign Up</button>
+      </form>
+    </section>
 
       {/* Start a new chat button */}
       <div className="start-chat-button-container">
@@ -213,10 +226,11 @@ Start a new conversation - and lose all the valuable context you've built - or k
       </div>
 
       <footer className="landing-footer">
-        <p>
+        <p style={{ color: 'grey', fontSize: '10px', marginTop: '0px' }}>
           Made by Shresth Kapoor. View codebase on <a href="https://github.com/shresthkapoor7/strands" target="_blank" rel="noopener noreferrer">GitHub</a>.
         </p>
       </footer>
+
     </div>
   );
 }
