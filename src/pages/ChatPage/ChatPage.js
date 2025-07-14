@@ -7,7 +7,7 @@ import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import Message from "../../models/Message";
 import "./ChatPage.css";
 import { sendMessageToGemini } from "../../api/gemini";
-import { sendMessageStream } from "../../api/chat";
+import { sendMessageStream } from "../../api/openRouter";
 
 const MAX_CONTEXT_SIZE_MAIN_CHAT = parseInt(localStorage.getItem('mainChatQueueSize')) || 10;
 const MAX_CONTEXT_SIZE_THREAD_CHAT = parseInt(localStorage.getItem('threadChatQueueSize')) || 5;
@@ -114,14 +114,6 @@ function ChatPage() {
     }
   };
 
-  useEffect(() => {
-    resizeMainTextarea();
-  }, [userInput]);
-
-  useEffect(() => {
-    resizeThreadTextarea();
-  }, [activeThread?.input]);
-
   const updateContextQueue = (newMessage) => {
     setContextQueue(prevQueue => {
       const updatedQueue = [...prevQueue, newMessage];
@@ -213,7 +205,7 @@ function ChatPage() {
       sentBy: 1,
       text: "",
       strand: false,
-      parentChatId: null,
+      parentMessageId: null,
       chatTitle
     });
 
@@ -230,7 +222,7 @@ function ChatPage() {
             assistantMessage.text += parsedChunk.text || "";
             setMessages((prev) =>
               prev.map((msg) =>
-                msg.id === assistantMessage.id
+                msg.messageId === assistantMessage.messageId
                   ? { ...msg, text: assistantMessage.text }
                   : msg
               )
@@ -250,7 +242,7 @@ function ChatPage() {
               accumulatedText += chunk.text;
               setMessages((prev) =>
                 prev.map((msg) =>
-                  msg.id === assistantMessage.id
+                  msg.messageId === assistantMessage.messageId
                     ? { ...msg, text: accumulatedText }
                     : msg
                 )
@@ -336,7 +328,7 @@ function ChatPage() {
       chatId,
       activeThread.input,
       true,
-      activeThread.parent.id,
+      activeThread.parent.messageId,
       chatTitle
     );
 
@@ -355,7 +347,7 @@ function ChatPage() {
       sentBy: 1,
       text: "",
       strand: true,
-      parentChatId: activeThread.parent.id,
+      parentMessageId: activeThread.parent.messageId,
       chatTitle
     });
 
@@ -383,7 +375,7 @@ function ChatPage() {
               setActiveThread((prev) => ({
                 ...prev,
                 replies: prev.replies.map((msg) =>
-                  msg.id === assistantReply.id
+                  msg.messageId === assistantReply.messageId
                     ? { ...msg, text: accumulatedText }
                     : msg
                 ),
@@ -401,7 +393,7 @@ function ChatPage() {
             assistantReply.text += parsedChunk.text;
             setMessages((prev) =>
               prev.map((msg) =>
-                msg.id === assistantReply.id
+                msg.messageId === assistantReply.messageId
                   ? { ...msg, text: assistantReply.text }
                   : msg
               )
@@ -415,7 +407,7 @@ function ChatPage() {
       const errorReply = Message.createErrorMessage(
         chatId,
         true,
-        activeThread.parent.id,
+        activeThread.parent.messageId,
         chatTitle
       );
 
@@ -432,7 +424,7 @@ function ChatPage() {
 
   const startThread = (parentMessage) => {
     const threadReplies = messageStore
-      .filter((msg) => msg.parentChatId === parentMessage.id)
+      .filter((msg) => msg.parentMessageId === parentMessage.messageId)
       .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
     const recentReplies = threadReplies.slice(-MAX_CONTEXT_SIZE_THREAD_CHAT + 1);
@@ -487,7 +479,7 @@ function ChatPage() {
 
   const handleAddMessageToMainQueue = (messageToAdd) => {
     setContextQueue(prevQueue => {
-      if (prevQueue.some(msg => msg.id === messageToAdd.id)) return prevQueue;
+      if (prevQueue.some(msg => msg.messageId === messageToAdd.messageId)) return prevQueue;
       const updatedQueue = [...prevQueue, messageToAdd].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
       return updatedQueue.length > MAX_CONTEXT_SIZE_MAIN_CHAT
         ? updatedQueue.slice(updatedQueue.length - MAX_CONTEXT_SIZE_MAIN_CHAT)
@@ -498,7 +490,7 @@ function ChatPage() {
   const handleAddMessageToThreadQueue = (messageToAdd) => {
     if (!activeThread) return;
     setThreadContextQueue(prevQueue => {
-      if (prevQueue.some(msg => msg.id === messageToAdd.id)) return prevQueue;
+      if (prevQueue.some(msg => msg.messageId === messageToAdd.messageId)) return prevQueue;
       const updatedQueue = [...prevQueue, messageToAdd].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
       return updatedQueue.length > MAX_CONTEXT_SIZE_THREAD_CHAT
         ? updatedQueue.slice(updatedQueue.length - MAX_CONTEXT_SIZE_THREAD_CHAT)
@@ -722,7 +714,7 @@ function ChatPage() {
           {messages.length !== 0 ? (
             <div className="chat-messages">
               {messages.map((msg, idx) => (
-                <div key={msg.id} className={`chat-bubble ${msg.sentBy === 0 ? "user" : "assistant"}`}>
+                <div key={msg.messageId} className={`chat-bubble ${msg.sentBy === 0 ? "user" : "assistant"}`}>
                   <div className="markdown-content">
                     <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ code: CodeBlock }}>
                       {msg.text}
@@ -821,7 +813,7 @@ function ChatPage() {
             </div>
             {activeThread.replies.map((reply) => (
               <div
-                key={reply.id}
+                key={reply.messageId}
                 className={`chat-bubble ${reply.sentBy === 0 ? 'user' : 'assistant'}`}
               >
                 <div className="markdown-content">
