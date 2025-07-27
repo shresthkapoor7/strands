@@ -5,7 +5,7 @@
 }
 
 .diagram-line {
-  stroke: #4A5568; /* gray-600 */
+  stroke: #4A5568;
   stroke-width: 2;
 }
 
@@ -16,7 +16,7 @@
 }
 
 .diagram-branch-line {
-  stroke: #60a5fa; /* A nice blue */
+  stroke: #60a5fa;
   stroke-width: 2;
 }
 
@@ -26,7 +26,6 @@
   stroke-width: 2;
 }
 
-/* --- Animation --- */
 @keyframes dot-appear {
   from {
     opacity: 0;
@@ -54,10 +53,9 @@
 
 .diagram-line,
 .diagram-branch-line {
-  opacity: 1; /* Lines must be opaque to be drawn */
+  opacity: 1;
 }
 
-/* --- Line Lengths --- */
 .problem-section .line-seg-1,
 .problem-section .line-seg-2,
 .problem-section .line-seg-3,
@@ -79,10 +77,12 @@
   stroke-dashoffset: 58;
 }
 
-/* --- Animation Trigger --- */
 .scroll-feature.visible .diagram-line,
 .scroll-feature.visible .diagram-branch-line {
   animation: line-draw 4s ease-out 0.4s forwards;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  animation-fill-mode: none;
 }
 
 .scroll-feature.visible .diagram-dot,
@@ -90,9 +90,6 @@
   animation: dot-appear 2.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.4s forwards;
 }
 
-/* --- Animation Delays --- */
-
-/* Problem Diagram - Slower and sequential */
 .scroll-feature.visible .problem-section .dot-1 { animation-delay: 0.2s; }
 .scroll-feature.visible .problem-section .line-seg-1 { animation-delay: 0.6s; }
 .scroll-feature.visible .problem-section .dot-2 { animation-delay: 1.2s; }
@@ -101,26 +98,20 @@
 .scroll-feature.visible .problem-section .line-seg-3 { animation-delay: 2.6s; }
 .scroll-feature.visible .problem-section .dot-4 { animation-delay: 3.2s; }
 
-/* Solution Diagram - Slower and sequential branches */
-/* Main path start */
 .scroll-feature.visible .solution-section .dot-1 { animation-delay: 0.2s; }
 .scroll-feature.visible .solution-section .main-line-1 { animation-delay: 0.6s; }
 .scroll-feature.visible .solution-section .dot-2 { animation-delay: 1.2s; }
 
-/* First branch */
 .scroll-feature.visible .solution-section .branch-line-1 { animation-delay: 1.6s; }
 .scroll-feature.visible .solution-section .branch-1-dot-1 { animation-delay: 2.2s; }
 .scroll-feature.visible .solution-section .branch-line-2 { animation-delay: 2.6s; }
 .scroll-feature.visible .solution-section .branch-1-dot-2 { animation-delay: 3.2s; }
 
-/* Continue main path */
 .scroll-feature.visible .solution-section .main-line-2 { animation-delay: 3.6s; }
 .scroll-feature.visible .solution-section .dot-3 { animation-delay: 4.2s; }
 
-/* Second branch */
 .scroll-feature.visible .solution-section .branch-line-3 { animation-delay: 4.6s; }
 .scroll-feature.visible .solution-section .branch-2-dot-1 { animation-delay: 5.2s; }
 
-/* End main path */
 .scroll-feature.visible .solution-section .main-line-3 { animation-delay: 5.6s; }
 .scroll-feature.visible .solution-section .dot-4 { animation-delay: 6.2s; }

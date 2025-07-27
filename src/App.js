@@ -7,8 +7,8 @@ import ThreadsPage from './pages/ThreadsPage/ThreadsPage';
 import SettingsPage from './pages/SettingsPage/SettingsPage';
 import MainContent from './components/MainContent';
 import ChatPage from './pages/ChatPage/ChatPage';
-import ChangelogsPage from './pages/ChangelogsPage/ChangelogsPage';
 import LoginPage from './pages/LoginPage/LoginPage';
+import ChangeLogs from './pages/ChangeLogs/ChangeLogs.tsx';
 
 const NoChatSelected = () => (
   <div className="no-chat-selected">
@@ -44,8 +44,8 @@ function App() {
             <Route path=":chatId" element={<ChatPage />} />
           </Route>
           <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/changelogs" element={<ChangelogsPage />} />
-          <Route path="/changelogs/:id" element={<ChangelogsPage />} />
+          <Route path="/changelogs" element={<ChangeLogs />} />
+          <Route path="/changelogs/:id" element={<ChangeLogs />} />
         </Routes>
       </div>
     </Router>

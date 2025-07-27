@@ -2,19 +2,18 @@ import { useNavigate } from 'react-router-dom';
 import { customAlphabet } from 'nanoid';
 import { useState, useEffect, useRef } from 'react';
 import './MainContent.css';
-import ProblemDiagram from './ProblemDiagram';
-import SolutionDiagram from './SolutionDiagram';
-import ThreadedThinkingDemo from './ThreadedThinkingDemo';
-import StreamingAIDemo from './StreamingAIDemo';
-import ModelSwitchingDemo from './ModelSwitchingDemo';
-import ReduceHallucinationsDemo from './ReduceHallucinationsDemo';
+import ProblemDiagram from './Illustrations/ProblemDiagram';
+import SolutionDiagram from './Illustrations/SolutionDiagram';
+import ThreadedThinkingDemo from './Demos/ThreadedThinkingDemo/ThreadedThinkingDemo';
+import StreamingAIDemo from './Demos/StreamingAIDemo/StreamingAIDemo';
+import ModelSwitchingDemo from './Demos/ModelSwitchingDemo/ModelSwitchingDemo';
+import ReduceHallucinationsDemo from './Demos/ReduceHallucinationDemo/ReduceHallucinationsDemo';
 
 function MainContent() {
   const navigate = useNavigate();
   const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 10);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isContentLoaded, setIsContentLoaded] = useState(false);
-  const [hasScrolled, setHasScrolled] = useState(false);
   const emailRef = useRef();
 
   const handleSubmit = (e) => {
@@ -26,6 +25,7 @@ function MainContent() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    console.log("Calm down little bro, you ain't a hacker");
   }, []);
 
   useEffect(() => {
@@ -75,21 +75,6 @@ function MainContent() {
     };
   }, [isContentLoaded]);
 
-  const handleGetStarted = () => {
-    navigate('/chat');
-  };
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 30) {
-        setHasScrolled(true);
-        window.removeEventListener('scroll', handleScroll);
-      }
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   const handleStartChat = () => {
     const newChatId = nanoid();
     navigate(`/chat/${newChatId}`);
@@ -135,6 +120,7 @@ function MainContent() {
 
       {isMobileMenuOpen && (
         <div className="mobile-nav-menu">
+          <a onClick={() => closeMenuAndNavigate('/')} className="landing-nav-link">Home</a>
           <a onClick={() => closeMenuAndNavigate('/chat')} className="landing-nav-link">Chats</a>
           <a onClick={() => closeMenuAndNavigate('/changelogs')} className="landing-nav-link">Changelogs</a>
           <a onClick={() => closeMenuAndNavigate('/settings')} className="landing-nav-link">Settings</a>
