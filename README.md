@@ -1,53 +1,12 @@
-## ✨ About This Project
+## Strands
 
-**Strands** is a personal conversational workspace built on top of modern AI models like Gemini. It introduces a unique threaded chat interface that allows users to branch off specific messages, creating deep, organized conversations — similar to Slack threads, but optimized for AI interaction.
+AI chats, but would be usable.
+Built my own thing because every other wrapper is mid.
 
-- 🔁 Smart context queue management (user-controlled)
-- 🧵 Threaded replies to any message
-- 💬 Real-time chat interface with React + Express
-- ☁️ Backend deployed on AWS EC2
-- 🧠 Device-based persistence using localStorage (Web) and UIDevice (iOS)
-- 🧪 Gemini model integration via API
+- Start a thread from any message
+- Fix to the Hallucination problem
+- React + Express, hosted on a AWS EC2
+- Web and iOS (iOS is under maintenance)
 
-🔗 **Live Website**: [strandschat.com](https://strandschat.com)
-
-### 🔗 Repositories
-
-- 🌐 Web + Backend: [github.com/shresthkapoor7/strands-backend](https://github.com/shresthkapoor7/strands-backend)
-- 📱 iOS App: [github.com/shresthkapoor7/strands-ios](https://github.com/shresthkapoor7/strands-ios)
-
----
-
-### 📱 iOS Support (In Progress)
-
-The native SwiftUI-based iOS app is actively under development. It already supports:
-
-- ✅ Full chat interface with context queue
-- ✅ Gemini API integration
-- ✅ Threaded view navigation with new window stack
-- ✅ Auto-title generation based on first response
-- ✅ Bottom navigation with tab bar
-
-Planned next:
-
-- ⏳ Saving chat history
-- ⏳ Authentication + syncing via Supabase
-
-The iOS app shares the same backend as the web version, ensuring consistent conversation state across platforms in future releases.
-
----
-
-### 📸 Screenshots
-
-<p align="center">
-  <img src="./1.jpg" width="300" />
-  <img src="./2.jpg" width="300" />
-</p>
-<p align="center">
-  <img src="./3.jpg" width="300" />
-  <img src="./4.jpg" width="300" />
-</p>
-<p align="center">
-  <img src="./5.jpg" width="300" />
-  <img src="./6.jpg" width="300" />
-</p>
+Live: [strandschat.com](https://strandschat.com)
+Code: [web/backend](https://github.com/shresthkapoor7/strands-backend) · [iOS](https://github.com/shresthkapoor7/strands-ios)
