@@ -25,7 +25,7 @@ function MainContent() {
   };
 
   useEffect(() => {
-    window.scrollTo(-1000, -1000);
+    window.scrollTo(0, 0);
   }, []);
 
   useEffect(() => {
