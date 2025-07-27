@@ -207,20 +207,28 @@ function MainContent() {
             </div>
             <div className="problem-text-container">
               <h2 className="scroll-feature-title">The Problem</h2>
-              <p className="scroll-feature-description">
-              LLMs can go off-track with just one bad response.
-That single confusing prompt? It can send the whole conversation spiraling into hallucinations. And if you're trying to explore a new idea midway through a chat, you're stuck between two frustrating options:
-Start a new conversation - and lose all the valuable context you've built - or keep going in the same thread and risk bloating the context window, gradually pushing earlier insights into irrelevance. As the conversation gets longer, the model remembers less of what actually mattered.
-              </p>
+              <div className="message-container">
+                <div className="message user-message">
+                  <div className="message-avatar user-avatar">😓</div>
+                  <div className="message-content">
+                    One wrong turn and your LLM loses the plot. Long chats bloat context. New ideas break flow. You either reset everything or lose clarity.
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
           <div className="scroll-feature solution-section">
             <div className="solution-text-container">
               <h2 className="scroll-feature-title">The Solution</h2>
-              <p className="scroll-feature-description">
-                Strands lets you branch off from any message in a conversation, keeping the original context intact. You can explore side ideas freely without polluting the main thread - and close them off when you're done. You also get full visibility into the context being sent to the LLM, helping you catch and reduce hallucinations. Plus, with support for multiple models, you can switch between them without losing the shared knowledge of your ongoing conversation.
-              </p>
+              <div className="message-container">
+                <div className="message ai-message">
+                  <div className="message-avatar ai-avatar">🚀</div>
+                  <div className="message-content">
+                    Strands keeps your context intact. Start new threads on any message, reduce hallucinations, and switch models without losing memory.
+                  </div>
+                </div>
+              </div>
             </div>
             <div className="solution-image-container">
               <SolutionDiagram />
@@ -230,7 +238,7 @@ Start a new conversation - and lose all the valuable context you've built - or k
       </main>
 
       <section className="email-signup-section">
-      <h2 className="signup-title">Stay in the loop</h2>
+      <h2 className="signup-title">Stay in the l∞p</h2>
       <p className="signup-description">Sign up for updates on new features and models.</p>
       <form className="email-signup-form" onSubmit={handleSubmit}>
         <input
