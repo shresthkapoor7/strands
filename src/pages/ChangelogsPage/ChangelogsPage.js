@@ -8,10 +8,28 @@ import './ChangelogsPage.css';
 const posts = [
   {
     id: 1,
-    title: 'Why I switched from GitHub Pages to Vercel',
-    url: 'https://raw.githubusercontent.com/shresthkapoor7/portfolio/main/public/blogs/1.md',
+    title: 'Github pages to Vercel',
+    url: '',
     date: 'June 21, 2025'
   },
+  {
+    id: 2,
+    title: 'Designing the ultimate context system',
+    url: '',
+    date: 'July 18, 2025'
+  },
+  {
+    id: 3,
+    title: 'Dropping Supabase',
+    url: '',
+    date: 'July 20, 2025'
+  },
+  {
+    id: 4,
+    title: 'Updating the UI',
+    url: '',
+    date: 'July 26, 2025'
+  }
 ];
 
 function ChangelogsPage() {
@@ -37,7 +55,7 @@ function ChangelogsPage() {
         })
         .catch(error => {
           console.error('Error fetching markdown:', error);
-          setMarkdown('Failed to load post.');
+          setMarkdown('Under maintenance');
         });
     } else {
       setMarkdown('');
