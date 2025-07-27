@@ -218,6 +218,12 @@
   gap: 1.25rem;
 }
 
+.chat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .save-chat-button {
   background-color: transparent;
   color: var(--primary-color);

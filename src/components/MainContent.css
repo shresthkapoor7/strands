@@ -6,18 +6,22 @@
 
 .landing-main {
   flex-grow: 1;
+  padding: 0 2rem;
 }
 
 .landing-footer {
   text-align: center;
   padding: 1rem 0;
   font-size: 0.875rem;
-  color: #a0aec0;
+  color: rgba(234, 234, 234, 0.8);
   width: 100%;
+  background: rgba(24, 24, 27, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .landing-footer a {
-  color: #a0aec0;
+  color: rgba(234, 234, 234, 0.9);
   text-decoration: underline;
 }
 
@@ -27,7 +31,7 @@
 }
 
 .landing-footer a:hover {
-  color: #e2e8f0;
+  color: #ffffff;
 }
 
 .landing-header,
@@ -87,6 +91,15 @@
 
 .scroll-features-container {
   padding: 4rem 0;
+  background: rgba(24, 24, 27, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 20px;
+  margin: 2rem auto;
+  width: 100%;
+  max-width: calc(1400px - 4rem);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-sizing: border-box;
 }
 
 .scroll-feature {
@@ -94,6 +107,7 @@
   gap: 4rem;
   align-items: center;
   margin-bottom: 8rem;
+  padding: 0 2rem;
   opacity: 0;
   transform: translateY(50px);
   transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -125,21 +139,36 @@
   font-size: 2.5rem;
   font-weight: 600;
   margin-bottom: 1rem;
-  color: #EAEAEA;
+  color: #FFFFFF;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .scroll-feature-description {
   font-size: 1.125rem;
   line-height: 1.6;
-  color: var(--secondary-text);
+  color: rgba(234, 234, 234, 0.9);
+  background: rgba(24, 24, 27, 0.6);
+  padding: 1.5rem;
+  border-radius: 12px;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .email-signup-section {
-  padding: 1rem 2rem;
+  padding: 3rem 2rem;
   text-align: center;
   opacity: 0;
   transform: translateY(50px);
   transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  background: rgba(24, 24, 27, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px;
+  margin: 2rem auto;
+  max-width: 600px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .email-signup-section.visible {
@@ -151,11 +180,13 @@
   font-size: 2.25rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
+  color: #FFFFFF;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .signup-description {
   font-size: 1.125rem;
-  color: #A0AEC0;
+  color: rgba(234, 234, 234, 0.9);
   margin-bottom: 2rem;
   max-width: 400px;
   margin-left: auto;
@@ -175,32 +206,45 @@
   flex-grow: 1;
   padding: 0.75rem 1rem;
   font-size: 1rem;
-  border-radius: 8px;
-  border: 1px solid #2A2D31;
-  background-color: black;
-  color: #EAEAEA;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(24, 24, 27, 0.8);
+  color: #FFFFFF;
   outline: none;
-  transition: border-color 0.2s;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.email-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .email-input:focus {
-  border-color: #EAEAEA;
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(24, 24, 27, 0.9);
+  box-shadow: 0 0 20px rgba(147, 51, 234, 0.2);
 }
 
 .signup-button {
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
   font-weight: 500;
-  border-radius: 8px;
+  border-radius: 12px;
   border: none;
-  background-color: #EAEAEA;
+  background: rgba(255, 255, 255, 0.9);
   color: #000000;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .signup-button:hover {
-  opacity: 0.9;
+  background: rgba(255, 255, 255, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
 @media (max-width: 768px) {
@@ -215,6 +259,16 @@
   .signup-button {
     padding: 0.75rem 1rem;
     font-size: 0.875rem;
+  }
+  .scroll-features-container {
+    padding: 2rem 1rem;
+    margin: 1rem auto;
+    width: 95%;
+    max-width: 95%;
+  }
+  .email-signup-section {
+    margin: 1rem;
+    padding: 2rem 1rem;
   }
 }
 
@@ -268,15 +322,24 @@
 }
 
 .start-chat-button-container .landing-get-started {
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 500;
-  border-radius: 8px;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 12px;
   border: none;
-  background-color: #EAEAEA;
+  background: rgba(255, 255, 255, 0.9);
   color: #000000;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.start-chat-button-container .landing-get-started:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
 .initial-footer {

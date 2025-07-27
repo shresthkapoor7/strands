@@ -6,6 +6,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import Message from "../../models/Message";
 import "./ChatPage.css";
+import "./MobileChatSettings.css";
 import { sendMessageToGemini } from "../../api/gemini";
 import { sendMessageStream } from "../../api/openRouter";
 
@@ -32,6 +33,7 @@ function ChatPage() {
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
   const modelDropdownRef = useRef(null);
   const [isContextModalOpen, setIsContextModalOpen] = useState(false);
+  const [isMobileSettingsOpen, setIsMobileSettingsOpen] = useState(false);
 
   const models = [
     // { name: "maverick", icon: "Ⓜ️", modelFull: "meta-llama/llama-4-maverick:free"},
@@ -105,6 +107,10 @@ function ChatPage() {
       el.style.height = `${el.scrollHeight}px`;
     }
   };
+
+  const closeMobileSettings = () => {
+    setIsMobileSettingsOpen(false);
+  }
 
   const resizeThreadTextarea = () => {
     const el = threadTextareaRef.current;
@@ -665,50 +671,99 @@ function ChatPage() {
             <h1 className="chat-title">
               {chatTitle} <span className="chat-id">#{shortId}</span>
             </h1>
-            <div className="model-dropdown-wrapper" ref={modelDropdownRef}>
-              <button
-                className="model-dropdown-btn"
-                onClick={() => setModelDropdownOpen((open) => !open)}
-              >
-                {models.find((m) => m.name === llm)?.icon} {models.find((m) => m.name === llm)?.name}
-                <span style={{ marginLeft: 6 }}>▼</span>
+            <div className="chat-header-actions">
+              <div className="model-dropdown-wrapper" ref={modelDropdownRef}>
+                <button
+                  className="model-dropdown-btn"
+                  onClick={() => setModelDropdownOpen((open) => !open)}
+                >
+                  {models.find((m) => m.name === llm)?.icon} {models.find((m) => m.name === llm)?.name}
+                  <span style={{ marginLeft: 6 }}>▼</span>
+                </button>
+                {modelDropdownOpen && (
+                  <div className="model-dropdown-menu">
+                    {models.map((model) => (
+                      <div
+                        key={model.name}
+                        className={`model-dropdown-item${llm === model.name ? ' selected' : ''}`}
+                        onClick={() => {
+                          setLlm(model.name);
+                          setModelDropdownOpen(false);
+                        }}
+                      >
+                        <span className="model-icon">{model.icon}</span>
+                        <span className="model-full">{model.modelFull}</span>
+                        {llm === model.name && <span className="model-check">✔</span>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <a className="view-context-button"
+                onClick={async () => {
+                  const success = await saveMessagesToSupabase(messageStore);
+                  if (success) {
+                    setMessageStore([]);
+                    alert("Chat saved successfully");
+                    window.location.reload();
+                  } else {
+                    alert("Failed to save chat");
+                  }
+                }}
+              >Save Chat</a>
+              <button className="view-context-button" onClick={() => setIsContextModalOpen(true)}>
+                View Context
               </button>
-              {modelDropdownOpen && (
-                <div className="model-dropdown-menu">
-                  {models.map((model) => (
-                    <div
-                      key={model.name}
-                      className={`model-dropdown-item${llm === model.name ? ' selected' : ''}`}
-                      onClick={() => {
-                        setLlm(model.name);
-                        setModelDropdownOpen(false);
-                      }}
-                    >
-                      <span className="model-icon">{model.icon}</span>
-                      <span className="model-full">{model.modelFull}</span>
-                      {llm === model.name && <span className="model-check">✔</span>}
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
-            <a className="view-context-button"
-              onClick={async () => {
-                const success = await saveMessagesToSupabase(messageStore);
-                if (success) {
-                  setMessageStore([]);
-                  alert("Chat saved successfully");
-                  window.location.reload();
-                } else {
-                  alert("Failed to save chat");
-                }
-              }}
-            >Save Chat</a>
-            <button className="view-context-button" onClick={() => setIsContextModalOpen(true)}>
-              View Context
+            <button className="mobile-settings-toggle" onClick={() => setIsMobileSettingsOpen(!isMobileSettingsOpen)}>
+              ⚙️
             </button>
           </div>
         </div>
+
+        {isMobileSettingsOpen && (
+          <div className="mobile-settings-overlay">
+            <div className="mobile-settings-content">
+              <h2>Settings</h2>
+              <button
+                className="mobile-settings-action-button"
+                onClick={() => {
+                  setIsContextModalOpen(true);
+                  closeMobileSettings();
+                }}
+              >
+                View Context
+              </button>
+              <button
+                className="mobile-settings-action-button"
+                onClick={() => {
+                  saveMessagesToSupabase(messageStore);
+                  closeMobileSettings();
+                }}
+              >
+                Save Chat
+              </button>
+
+              <div className="mobile-model-selector">
+                <h3>Select Model</h3>
+                {models.map(model => (
+                  <div
+                    key={model.name}
+                    className={`mobile-model-option ${llm === model.name ? 'selected' : ''}`}
+                    onClick={() => {
+                      setLlm(model.name);
+                    }}
+                  >
+                    <span className="model-icon">{model.icon}</span>
+                    <span className="model-name">{model.name}</span>
+                  </div>
+                ))}
+              </div>
+
+              <button className="mobile-settings-close-button" onClick={closeMobileSettings}>Close</button>
+            </div>
+          </div>
+        )}
 
         <div className="chat-body">
           {messages.length !== 0 ? (
@@ -720,7 +775,6 @@ function ChatPage() {
                       {msg.text}
                     </ReactMarkdown>
                   </div>
-                  {/* Strand Off Button */}
                   {msg.sentBy === 1 && (
                     <div className="strand-off">
                       <button
@@ -824,12 +878,8 @@ function ChatPage() {
               </div>
             ))}
             {isThreadLoading && (
-              <div className="loading-bubble">
-                <div className="loading-dots">
-                  <div className="loading-dot"></div>
-                  <div className="loading-dot"></div>
-                  <div className="loading-dot"></div>
-                </div>
+              <div className="loading-container">
+                <div className="loading-indicator"></div>
               </div>
             )}
           </div>

@@ -4,6 +4,10 @@ import { useState, useEffect, useRef } from 'react';
 import './MainContent.css';
 import ProblemDiagram from './ProblemDiagram';
 import SolutionDiagram from './SolutionDiagram';
+import ThreadedThinkingDemo from './ThreadedThinkingDemo';
+import StreamingAIDemo from './StreamingAIDemo';
+import ModelSwitchingDemo from './ModelSwitchingDemo';
+import ReduceHallucinationsDemo from './ReduceHallucinationsDemo';
 
 function MainContent() {
   const navigate = useNavigate();
@@ -99,13 +103,25 @@ function MainContent() {
   return (
     <div className={`landing-root ${isContentLoaded ? 'loaded' : ''}`}>
       <header className="landing-header">
-        <div className="landing-logo">Strands</div>
         <div className="landing-nav">
+          <span className="landing-brand">Strands</span>
           <a href="/chat" className="landing-nav-link">Chats</a>
           <a href="/changelogs" className="landing-nav-link">Changelogs</a>
           <a href="/settings" className="landing-nav-link">Settings</a>
+          <a
+            href="https://github.com/shresthkapoor7/strands"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="landing-nav-link github-link"
+            aria-label="View on GitHub"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+            </svg>
+            <span>Shresth</span>
+          </a>
           <button className="landing-get-started" onClick={handleStartChat}>
-            Start a New Chat
+            Get Started!
           </button>
         </div>
         <button
@@ -132,48 +148,58 @@ function MainContent() {
       )}
 
       <main className="landing-main">
-        <h1 className="landing-title">Meet Strands</h1>
-        <p className="landing-description">
-          Strands is a next generation AI assistant built for deep, structured conversations. Stay organized, explore ideas, and do your best work with context-aware threads.
-        </p>
-        <div className="landing-showcase">
-            <img src="animated_branch_tree.gif" alt="Animated pixel art" className="landing-gif" />
-          <div id="features" className="landing-features">
-            <div className="landing-feature">
-              <span className="feature-icon">🧠</span>
-              <div>
-                <h3 className="feature-title">Think in threads</h3>
-                <p className="feature-desc">Break free from linear chats. Strands lets you create contextual branches — so you can explore ideas, backtrack, and revisit thoughts without losing the flow.</p>
+        <div className="hero-container">
+          <div className="yc-badge">
+            <span className="yc-logo">Y</span>
+            <span className="yc-text">Not backed by Y Combinator</span>
+          </div>
+          <h1 className="landing-title">Solution to your <br /> AI assistant woes</h1>
+          <p className="landing-description">
+          Your AI assistant for structured, context-rich conversations.
+          Think in threads. Explore freely. Stay focused.
+          </p>
+          <div className="landing-showcase">
+            <div id="features" className="landing-features">
+              <div className="landing-feature">
+                <ThreadedThinkingDemo />
+                <div className="feature-text-section">
+                  <div>
+                    <h3 className="feature-title">Threaded Thinking</h3>
+                    <p className="feature-desc">Branch off ideas without breaking flow.</p>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="feature-divider" />
-            <div className="landing-feature">
-              <span className="feature-icon">⚡</span>
-              <div>
-                <h3 className="feature-title">Powered by Streaming AI</h3>
-                <p className="feature-desc">Experience low-latency responses with streaming support for Gemini and other cutting-edge LLMs via OpenRouter integration.</p>
+              <div className="landing-feature">
+                <StreamingAIDemo />
+                <div className="feature-text-section">
+                  <div>
+                    <h3 className="feature-title">Streaming AI</h3>
+                    <p className="feature-desc">Low-latency responses from top LLMs.</p>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="feature-divider" />
-            <div className="landing-feature">
-              <span className="feature-icon">🤝</span>
-              <div>
-                <h3 className="feature-title">Switch between models</h3>
-                <p className="feature-desc">Switch between different LLMs with one click. Each model remembers your context.</p>
+              <div className="landing-feature">
+                <ModelSwitchingDemo />
+                <div className="feature-text-section">
+                  <div>
+                    <h3 className="feature-title">Model Switching</h3>
+                    <p className="feature-desc">Switch between different LLMs with one click.</p>
+                  </div>
+                </div>
+              </div>
+              <div className="landing-feature">
+                <ReduceHallucinationsDemo />
+                <div className="feature-text-section">
+                  <div>
+                    <h3 className="feature-title">Reduce Hallucinations</h3>
+                    <p className="feature-desc">See the context being sent to the LLM.</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-        <div className={`scroll-down-container ${hasScrolled ? 'hidden' : ''}`}>
-          <span className="scroll-down-arrow" aria-label="Scroll down">
-            ↓
-          </span>
-        </div>
-        <footer className={`landing-footer initial-footer ${hasScrolled ? 'hidden' : ''}`}>
-        <p style={{ color: 'grey', fontSize: '10px', marginTop: '0px' }}>
-          Made by Shresth Kapoor. View codebase on <a href="https://github.com/shresthkapoor7/strands" target="_blank" rel="noopener noreferrer">GitHub</a>.
-        </p>
-      </footer>
+
         <div className="scroll-features-container">
           <div className="scroll-feature problem-section">
             <div className="problem-image-container">
@@ -217,19 +243,6 @@ Start a new conversation - and lose all the valuable context you've built - or k
         <button type="submit" className="signup-button">Sign Up</button>
       </form>
     </section>
-
-      {/* Start a new chat button */}
-      <div className="start-chat-button-container">
-        <button className="landing-get-started" onClick={handleGetStarted}>
-          Get Started!
-        </button>
-      </div>
-
-      <footer className="landing-footer">
-        <p style={{ color: 'grey', fontSize: '10px', marginTop: '0px' }}>
-          Made by Shresth Kapoor. View codebase on <a href="https://github.com/shresthkapoor7/strands" target="_blank" rel="noopener noreferrer">GitHub</a>.
-        </p>
-      </footer>
 
     </div>
   );
