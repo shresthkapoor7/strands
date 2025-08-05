@@ -498,14 +498,16 @@ body {
   background: #ff6600;
   color: white;
   font-weight: bold;
-  font-size: 1rem;
-  width: 20px;
-  height: 20px;
-  display: flex;
+  font-size: 0.7rem;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
+  border-radius: 3px;
   flex-shrink: 0;
+  vertical-align: middle;
+  margin: 0 2px;
 }
 
 .yc-text {
