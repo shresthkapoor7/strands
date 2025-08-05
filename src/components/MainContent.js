@@ -136,8 +136,7 @@ function MainContent() {
       <main className="landing-main">
         <div className="hero-container">
           <div className="yc-badge">
-            <span className="yc-logo">Y</span>
-            <span className="yc-text">Not backed by Y Combinator</span>
+            <span className="yc-text">Not backed by <span className="yc-logo">Y</span> Combinator</span>
           </div>
           <h1 className="landing-title">Solution to your <br /> AI assistant woes</h1>
           <p className="landing-description">
