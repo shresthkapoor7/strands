@@ -91,8 +91,8 @@ function MainContent() {
         <div className="landing-nav">
           <span className="landing-brand">Strands</span>
           <a href="/chat" className="landing-nav-link">Chats</a>
-          <a href="/changelogs" className="landing-nav-link">Changelogs</a>
-          <a href="/settings" className="landing-nav-link">Settings</a>
+          <a href="/changelogs" className="landing-nav-link">ChangeLogs</a>
+          {/* <a href="/settings" className="landing-nav-link">Settings</a> */}
           <a
             href="https://github.com/shresthkapoor7/strands"
             target="_blank"
@@ -123,7 +123,7 @@ function MainContent() {
           <a onClick={() => closeMenuAndNavigate('/')} className="landing-nav-link">Home</a>
           <a onClick={() => closeMenuAndNavigate('/chat')} className="landing-nav-link">Chats</a>
           <a onClick={() => closeMenuAndNavigate('/changelogs')} className="landing-nav-link">Changelogs</a>
-          <a onClick={() => closeMenuAndNavigate('/settings')} className="landing-nav-link">Settings</a>
+          {/* <a onClick={() => closeMenuAndNavigate('/settings')} className="landing-nav-link">Settings</a> */}
           <button className="landing-get-started" onClick={() => {
             setIsMobileMenuOpen(false);
             handleStartChat();
