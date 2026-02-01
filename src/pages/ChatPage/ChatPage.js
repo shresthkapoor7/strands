@@ -699,9 +699,8 @@ function ChatPage() {
                   </div>
                 )}
               </div>
-              <a href="#" className="view-context-button"
-                onClick={async (e) => {
-                  e.preventDefault();
+              <button className="view-context-button"
+                onClick={async () => {
                   const success = await saveMessagesToSupabase(messageStore);
                   if (success) {
                     setMessageStore([]);
@@ -711,7 +710,7 @@ function ChatPage() {
                     alert("Failed to save chat");
                   }
                 }}
-              >Save Chat</a>
+              >Save Chat</button>
               <button className="view-context-button" onClick={() => setIsContextModalOpen(true)}>
                 View Context
               </button>

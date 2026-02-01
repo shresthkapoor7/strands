@@ -120,10 +120,10 @@ function MainContent() {
 
       {isMobileMenuOpen && (
         <div className="mobile-nav-menu">
-          <a href="#" onClick={(e) => { e.preventDefault(); closeMenuAndNavigate('/'); }} className="landing-nav-link">Home</a>
-          <a href="#" onClick={(e) => { e.preventDefault(); closeMenuAndNavigate('/chat'); }} className="landing-nav-link">Chats</a>
-          <a href="#" onClick={(e) => { e.preventDefault(); closeMenuAndNavigate('/changelogs'); }} className="landing-nav-link">Changelogs</a>
-          {/* <a onClick={() => closeMenuAndNavigate('/settings')} className="landing-nav-link">Settings</a> */}
+          <button onClick={() => closeMenuAndNavigate('/')} className="landing-nav-link">Home</button>
+          <button onClick={() => closeMenuAndNavigate('/chat')} className="landing-nav-link">Chats</button>
+          <button onClick={() => closeMenuAndNavigate('/changelogs')} className="landing-nav-link">Changelogs</button>
+          {/* <button onClick={() => closeMenuAndNavigate('/settings')} className="landing-nav-link">Settings</button> */}
           <button className="landing-get-started" onClick={() => {
             setIsMobileMenuOpen(false);
             handleStartChat();
