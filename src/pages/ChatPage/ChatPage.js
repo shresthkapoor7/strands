@@ -28,7 +28,7 @@ function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isThreadLoading, setIsThreadLoading] = useState(false);
   const [messageStore, setMessageStore] = useState([]);
-  const [browserSearchEnabled, setBrowserSearchEnabled] = useState(false);
+  const [browserSearchEnabled] = useState(false);
   const [llm, setLlm] = useState("gemini");
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
   const modelDropdownRef = useRef(null);
@@ -98,7 +98,7 @@ function ChatPage() {
     };
 
     loadMessages().finally(() => setIsLoading(false));
-  }, [chatId]);
+  }, [chatId, shortId]);
 
   const resizeMainTextarea = () => {
     const el = textareaRef.current;
@@ -699,8 +699,9 @@ function ChatPage() {
                   </div>
                 )}
               </div>
-              <a className="view-context-button"
-                onClick={async () => {
+              <a href="#" className="view-context-button"
+                onClick={async (e) => {
+                  e.preventDefault();
                   const success = await saveMessagesToSupabase(messageStore);
                   if (success) {
                     setMessageStore([]);
