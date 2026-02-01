@@ -219,6 +219,7 @@ function MainContent() {
               <SolutionDiagram />
             </div>
           </div>
+          <h2 style={{ color: 'yellow' }}>Project paused for cleanup</h2>
         </div>
       </main>
 
